@@ -7,6 +7,8 @@ interface OverviewProps {
   onSelectAnomaly: (id: string) => void;
   onNavigateToQueue: (filter?: { risk?: string; status?: string }) => void;
   loading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 export const OverviewView: React.FC<OverviewProps> = ({
@@ -14,12 +16,44 @@ export const OverviewView: React.FC<OverviewProps> = ({
   recentAnomalies,
   onSelectAnomaly,
   onNavigateToQueue,
-  loading
+  loading,
+  error,
+  onRetry
 }) => {
-  if (loading || !summary) {
+  if (loading) {
     return (
       <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
         Loading dashboard metrics...
+      </div>
+    );
+  }
+
+  if (error || !summary) {
+    return (
+      <div style={{ padding: '2.5rem', textAlign: 'center', backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '10px', margin: '1rem 0' }}>
+        <h3 style={{ color: '#991B1B', margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 600 }}>
+          Unable to Load Dashboard Metrics
+        </h3>
+        <p style={{ color: '#7F1D1D', fontSize: '0.875rem', margin: '0 0 1.25rem 0', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+          {error || 'Failed to establish connection with the REST API backend.'}
+        </p>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            style={{
+              padding: '0.5rem 1.25rem',
+              backgroundColor: '#DC2626',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '6px',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              cursor: 'pointer'
+            }}
+          >
+            Retry Connection
+          </button>
+        )}
       </div>
     );
   }

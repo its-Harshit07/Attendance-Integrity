@@ -26,6 +26,7 @@ export const App: React.FC = () => {
   // Summary state
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loadingSummary, setLoadingSummary] = useState<boolean>(true);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   // Queue state
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
@@ -35,6 +36,7 @@ export const App: React.FC = () => {
     offset: 0
   });
   const [loadingQueue, setLoadingQueue] = useState<boolean>(true);
+  const [queueError, setQueueError] = useState<string | null>(null);
 
   // Recent high priority state for Overview
   const [recentAnomalies, setRecentAnomalies] = useState<Anomaly[]>([]);
@@ -47,11 +49,14 @@ export const App: React.FC = () => {
 
   // Load summary
   const loadSummaryData = useCallback(async () => {
+    setLoadingSummary(true);
+    setSummaryError(null);
     try {
       const data = await fetchSummary();
       setSummary(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load summary:', err);
+      setSummaryError(err.message || 'Failed to connect to REST API');
     } finally {
       setLoadingSummary(false);
     }
@@ -60,12 +65,14 @@ export const App: React.FC = () => {
   // Load anomaly queue
   const loadQueueData = useCallback(async (params: AnomalyFilterParams) => {
     setLoadingQueue(true);
+    setQueueError(null);
     try {
       const res = await fetchAnomalies(params);
       setAnomalies(res.data);
       setTotalCount(res.total);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load anomalies:', err);
+      setQueueError(err.message || 'Failed to load anomalies');
     } finally {
       setLoadingQueue(false);
     }
@@ -142,6 +149,8 @@ export const App: React.FC = () => {
           onSelectAnomaly={handleSelectAnomaly}
           onNavigateToQueue={handleNavigateToQueue}
           loading={loadingSummary}
+          error={summaryError}
+          onRetry={loadSummaryData}
         />
       )}
 
@@ -153,6 +162,7 @@ export const App: React.FC = () => {
           onFilterChange={handleFilterChange}
           onSelectAnomaly={handleSelectAnomaly}
           loading={loadingQueue}
+          error={queueError}
         />
       )}
 

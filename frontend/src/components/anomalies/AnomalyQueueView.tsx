@@ -9,6 +9,7 @@ interface AnomalyQueueProps {
   onFilterChange: (params: AnomalyFilterParams) => void;
   onSelectAnomaly: (anomalyId: string) => void;
   loading: boolean;
+  error?: string | null;
 }
 
 export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
@@ -17,7 +18,8 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
   filterParams,
   onFilterChange,
   onSelectAnomaly,
-  loading
+  loading,
+  error
 }) => {
   const [searchInput, setSearchInput] = useState(filterParams.search || '');
 
@@ -330,6 +332,12 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
                 <tr>
                   <td colSpan={9} style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
                     Loading anomaly signals...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={9} style={{ padding: '3rem', textAlign: 'center', color: '#991B1B', backgroundColor: '#FEF2F2' }}>
+                    Failed to load anomaly queue: {error}
                   </td>
                 </tr>
               ) : anomalies.length === 0 ? (
