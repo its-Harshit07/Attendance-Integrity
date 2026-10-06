@@ -164,3 +164,30 @@ def test_data_security_no_ground_truth_exposure():
     assert "anomaly_labels.csv" not in text_content
     assert "injection_log.csv" not in text_content
     assert "DATABASE_URL" not in text_content
+
+
+def test_cors_preflight_and_origin_headers():
+    """Verify OPTIONS preflight and GET requests from Vercel production origin return valid Access-Control-Allow-Origin header."""
+    vercel_origin = "https://attendance-integrity.vercel.app"
+
+    # Preflight OPTIONS request
+    opt_res = client.options(
+        "/api/dashboard/summary",
+        headers={
+            "Origin": vercel_origin,
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+    assert opt_res.status_code == 200
+    assert opt_res.headers.get("access-control-allow-origin") == vercel_origin
+    assert "GET" in opt_res.headers.get("access-control-allow-methods", "")
+
+    # Normal GET request
+    get_res = client.get(
+        "/api/dashboard/summary",
+        headers={"Origin": vercel_origin}
+    )
+    assert get_res.status_code == 200
+    assert get_res.headers.get("access-control-allow-origin") == vercel_origin
+    assert get_res.headers.get("access-control-allow-credentials") == "true"
+

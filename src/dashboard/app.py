@@ -57,8 +57,21 @@ app = FastAPI(
 )
 
 # Configure CORS Origins
-cors_origins_raw = os.getenv("CORS_ORIGINS", "*")
-allowed_origins = [o.strip() for o in cors_origins_raw.split(",")] if cors_origins_raw != "*" else ["*"]
+DEFAULT_ALLOWED_ORIGINS = [
+    "https://attendance-integrity.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:8000"
+]
+
+cors_origins_raw = os.getenv("CORS_ORIGINS", "").strip()
+
+if not cors_origins_raw or cors_origins_raw == "*":
+    allowed_origins = DEFAULT_ALLOWED_ORIGINS
+else:
+    parsed_origins = [o.strip().rstrip("/") for o in cors_origins_raw.split(",") if o.strip()]
+    allowed_origins = list(dict.fromkeys(parsed_origins + DEFAULT_ALLOWED_ORIGINS))
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,6 +80,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # Global Exception Handler (Suppress Raw Tracebacks)
