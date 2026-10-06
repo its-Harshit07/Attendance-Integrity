@@ -1,0 +1,69 @@
+{
+  "total_students": 89,
+  "total_classes": 6,
+  "total_records": 10706,
+  "date_range": {
+    "start": "2025-08-01",
+    "end": "2025-11-30"
+  },
+  "records_by_month": {
+    "AGUSTUS": 2759,
+    "OKTOBER": 2697,
+    "SEPTEMBER": 2640,
+    "NOVEMBER": 2610
+  },
+  "students_by_class": {
+    "Kls 7_SISWA_001": 14,
+    "Kls 7_SISWA_017": 14,
+    "Kls 8_SISWA_032": 19,
+    "Kls 8_SISWA_052": 19,
+    "Kls 9_SISWA_072": 12,
+    "Kls 9_SISWA_085": 11
+  },
+  "raw_status_distribution": {
+    "": 10533,
+    "s": 147,
+    "i": 24,
+    "a": 2
+  },
+  "school_day_distribution": {
+    "TRUE": 63,
+    "FALSE": 36,
+    "UNKNOWN": 23
+  },
+  "roster_continuity_summary": {
+    "total_tracked_students": 89,
+    "continuous_students": 87,
+    "disappeared_students": 2,
+    "disappeared_details": [
+      {
+        "student_id": "STU_125724",
+        "student_name": "SISWA_060",
+        "class_id": "Kls 8_SISWA_052",
+        "months_present": [
+          "AGUSTUS",
+          "SEPTEMBER"
+        ],
+        "months_absent": [
+          "OKTOBER",
+          "NOVEMBER"
+        ],
+        "note": "Student no longer appears in subsequent source registers."
+      },
+      {
+        "student_id": "STU_225779",
+        "student_name": "SISWA_089",
+        "class_id": "Kls 9_SISWA_085",
+        "months_present": [
+          "AGUSTUS"
+        ],
+        "months_absent": [
+          "SEPTEMBER",
+          "OKTOBER",
+          "NOVEMBER"
+        ],
+        "note": "Student no longer appears in subsequent source registers."
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+# Attendance Integrity System - Core Production Requirements
+pandas>=2.0.0
+openpyxl>=3.0.0
+python-dateutil>=2.8.0
+scikit-learn>=1.3.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+httpx>=0.24.0
+sqlalchemy>=2.0.0
+psycopg>=3.1.0
+alembic>=1.12.0
+python-dotenv>=1.0.0

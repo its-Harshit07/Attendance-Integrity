@@ -1,0 +1,174 @@
+{
+  "summary": {
+    "source_files_count": 4,
+    "sheets_count": 12,
+    "total_students": 89,
+    "total_classes": 6,
+    "total_months": 4,
+    "date_range": {
+      "start": "2025-08-01",
+      "end": "2025-11-30"
+    },
+    "canonical_rows_generated": 10706,
+    "calendar_days": 122,
+    "school_day_distribution": {
+      "TRUE": 63,
+      "FALSE": 36,
+      "UNKNOWN": 23
+    }
+  },
+  "sheet_metadata": [
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - AGUSTUS_ANON.xlsx",
+      "sheet_name": "Kls 7",
+      "total_rows": 62,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        40
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - AGUSTUS_ANON.xlsx",
+      "sheet_name": "Kls 8",
+      "total_rows": 81,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        54
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - AGUSTUS_ANON.xlsx",
+      "sheet_name": "Kls 9",
+      "total_rows": 70,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        49
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - NOVEMBER_ANON.xlsx",
+      "sheet_name": "Kls 7",
+      "total_rows": 62,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        40
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - NOVEMBER_ANON.xlsx",
+      "sheet_name": "Kls 8",
+      "total_rows": 80,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        54
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - NOVEMBER_ANON.xlsx",
+      "sheet_name": "Kls 9",
+      "total_rows": 65,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        47
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - OKTOBER_ANON.xlsx",
+      "sheet_name": "Kls 7",
+      "total_rows": 63,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        41
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - OKTOBER_ANON.xlsx",
+      "sheet_name": "Kls 8",
+      "total_rows": 80,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        54
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - OKTOBER_ANON.xlsx",
+      "sheet_name": "Kls 9",
+      "total_rows": 69,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        49
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - SEPTEMBER_ANON.xlsx",
+      "sheet_name": "Kls 7",
+      "total_rows": 64,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        41
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - SEPTEMBER_ANON.xlsx",
+      "sheet_name": "Kls 8",
+      "total_rows": 81,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        54
+      ]
+    },
+    {
+      "source_file": "Daftar_Absen_Siswa_SMPKPK_Th._2025-2026 - SEPTEMBER_ANON.xlsx",
+      "sheet_name": "Kls 9",
+      "total_rows": 67,
+      "detected_blocks": 2,
+      "header_row_indices": [
+        9,
+        49
+      ]
+    }
+  ],
+  "raw_status_distribution": {
+    "": 10533,
+    "s": 147,
+    "i": 24,
+    "a": 2
+  },
+  "normalized_status_distribution": {
+    "NO_EXCEPTION_RECORDED": 10533,
+    "SOURCE_MARK_S": 147,
+    "SOURCE_MARK_I": 24,
+    "SOURCE_MARK_A": 2
+  },
+  "data_quality_checks": {
+    "missing_student_ids": 0,
+    "duplicate_student_ids_in_master": 0,
+    "duplicate_student_date_observations": 0,
+    "unexpected_status_values_count": 0,
+    "empty_sheets": 0,
+    "malformed_rows": 0
+  },
+  "assumptions_and_transformations": [
+    "Source Excel files are preserved strictly without modification.",
+    "Header row detected dynamically by matching numeric date sequences (1, 2, 3...) in table rows.",
+    "Raw attendance marks ('s', 'i', 'a', '') are preserved verbatim in raw_status.",
+    "Blank cells are normalized to 'NO_EXCEPTION_RECORDED' and NOT assumed to mean 'PRESENT' without explicit evidence.",
+    "Neutral status tokens ('SOURCE_MARK_S', 'SOURCE_MARK_I', 'SOURCE_MARK_A') are used in attendance_status.",
+    "Calendar representations support TRUE, FALSE, UNKNOWN for is_school_day.",
+    "Saturdays and Sundays are marked is_school_day = FALSE (Weekend).",
+    "Weekdays with verified exception marks (s, i, a) recorded in source registers are marked is_school_day = TRUE.",
+    "Weekdays with no exception evidence are marked is_school_day = UNKNOWN (no holidays fabricated).",
+    "record_id generated deterministically using SHA-256 hash of (student_id + date)."
+  ]
+}

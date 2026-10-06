@@ -1,0 +1,20 @@
+# Render Blueprint Manifest for Attendance Integrity Backend API
+services:
+  - type: web
+    name: attendance-integrity-api
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn src.dashboard.app:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: MODEL_PATH
+        value: models/isolation_forest_v1.pkl
+      - key: LOG_LEVEL
+        value: INFO
+    healthCheckPath: /api/health
+

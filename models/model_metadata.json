@@ -1,0 +1,33 @@
+{
+  "model_version": "v1.0.0",
+  "training_date": "2026-10-06T11:02:12.597669+00:00",
+  "training_date_range": "2025-08-01 to 2025-09-30",
+  "training_record_count": 5399,
+  "feature_list": [
+    "exception_count_7d",
+    "exception_count_14d",
+    "exception_count_30d",
+    "exception_rate_7d",
+    "exception_rate_14d",
+    "exception_rate_30d",
+    "historical_exception_count",
+    "historical_exception_rate",
+    "consecutive_exception_days",
+    "days_since_last_exception",
+    "recent_vs_historical_deviation",
+    "class_exception_rate_7d",
+    "student_vs_class_deviation"
+  ],
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_samples": "auto",
+    "contamination": 0.01,
+    "random_state": 42
+  },
+  "random_seed": 42,
+  "validation_procedure": "Threshold selected at 99th percentile of clean October validation set anomaly scores",
+  "operating_threshold_raw": -0.0012516714658429,
+  "score_min": -0.3929233836726907,
+  "score_max": 0.05457375550424881,
+  "score_convention": "higher score = more anomalous (normalized [0.0, 1.0])"
+}

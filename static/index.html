@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Integrity Administrator Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">A</div>
+      <div class="brand-text">
+        <h1>Attendance Integrity</h1>
+        <span>Decision Support</span>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item active" data-view="overview">
+        <button><span class="nav-icon">📊</span> Overview</button>
+      </li>
+      <li class="nav-item" data-view="queue">
+        <button><span class="nav-icon">🚨</span> Anomaly Queue</button>
+      </li>
+      <li class="nav-item" data-view="student">
+        <button><span class="nav-icon">👤</span> Student Context</button>
+      </li>
+      <li class="nav-item" data-view="reports">
+        <button><span class="nav-icon">📑</span> Compliance Preview</button>
+      </li>
+      <li class="nav-item" data-view="audit">
+        <button><span class="nav-icon">📜</span> Audit Log</button>
+      </li>
+      <li class="nav-item" data-view="info">
+        <button><span class="nav-icon">⚙️</span> System Provenance</button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <p>Attendance Integrity System v1.0</p>
+      <p>Phase 4 Model: Frozen v1.0.0</p>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <main class="main-wrapper">
+    
+    <!-- Top Header -->
+    <header class="header-bar">
+      <div class="header-title">
+        <h2 id="view-title">Overview Dashboard</h2>
+        <p id="view-subtitle">AI-assisted decision-support metrics and operational review queue.</p>
+      </div>
+
+      <div class="admin-badge">
+        <div class="admin-avatar">AD</div>
+        <div>
+          <div style="font-size:0.85rem; font-weight:600;">Administrator (Dev)</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">Compliance Reviewer</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Disclaimer Banner -->
+    <div class="disclaimer-banner">
+      <span>ℹ️</span>
+      <div>
+        <strong>Human-in-the-Loop Decision Support:</strong> All anomaly flags represent review signals for administrator verification rather than confirmed misconduct.
+      </div>
+    </div>
+
+    <!-- VIEW 1: OVERVIEW VIEW -->
+    <section id="view-overview" class="view-section active">
+      <div class="card-grid">
+        <div class="glass-card metric-card">
+          <div class="metric-label">Total Flagged Records <span>🚨</span></div>
+          <div class="metric-value" id="metric-total">--</div>
+          <div class="metric-subtext">November Evaluation Period</div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-label">Pending Reviews <span>⏳</span></div>
+          <div class="metric-value" style="color:var(--risk-medium);" id="metric-unreviewed">--</div>
+          <div class="metric-subtext">Requires Administrator Action</div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-label">High Priority Signals <span>🔥</span></div>
+          <div class="metric-value" style="color:var(--risk-high);" id="metric-high-risk">--</div>
+          <div class="metric-subtext">Critical & High Risk Tiers</div>
+        </div>
+
+        <div class="glass-card metric-card">
+          <div class="metric-label">Validated Reviews <span>✅</span></div>
+          <div class="metric-value" style="color:var(--risk-normal);" id="metric-validated">--</div>
+          <div class="metric-subtext">Confirmed Review Actionable</div>
+        </div>
+      </div>
+
+      <div class="card-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="glass-card">
+          <h3 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:16px;">Anomaly Category Partition</h3>
+          <div style="display:flex; justify-content:space-around; align-items:center; height:140px;">
+            <div style="text-align:center;">
+              <div style="font-size:2rem; font-weight:700; color:var(--accent-cyan);" id="metric-data-integrity">--</div>
+              <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Data Integrity Faults<br>(R001-R004)</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:2rem; font-weight:700; color:var(--accent-primary);" id="metric-behavioral">--</div>
+              <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Behavioral Patterns<br>(R005-R008 + ML)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:16px;">Detection Source Distribution</h3>
+          <div style="display:flex; justify-content:space-around; align-items:center; height:140px;">
+            <div style="text-align:center;">
+              <div style="font-size:1.6rem; font-weight:700; color:var(--accent-cyan);" id="metric-source-rules">--</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Rules Only</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:1.6rem; font-weight:700; color:var(--accent-blue);" id="metric-source-ml">--</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">ML Only</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:1.6rem; font-weight:700; color:var(--accent-primary);" id="metric-source-combined">--</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Combined</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: ANOMALY QUEUE VIEW -->
+    <section id="view-queue" class="view-section">
+      <div class="table-container">
+        <div class="table-controls">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="queue-search" placeholder="Search student ID, class, date, category...">
+          </div>
+
+          <div class="filter-group">
+            <select id="filter-risk" class="select-custom">
+              <option value="ALL">All Risk Tiers</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+
+            <select id="filter-status" class="select-custom">
+              <option value="ALL">All Review Statuses</option>
+              <option value="UNREVIEWED">Unreviewed</option>
+              <option value="UNDER_REVIEW">Under Review</option>
+              <option value="VALIDATED">Validated</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="INVESTIGATE">Investigate</option>
+            </select>
+
+            <select id="filter-category" class="select-custom">
+              <option value="ALL">All Categories</option>
+              <option value="DATA_INTEGRITY">Data Integrity</option>
+              <option value="BEHAVIORAL">Behavioral Patterns</option>
+              <option value="DUPLICATE">Duplicate</option>
+              <option value="CONFLICT">Conflict</option>
+              <option value="MISSING_RECORD">Missing Record</option>
+              <option value="INVALID_RECORD">Invalid Record</option>
+              <option value="BEHAVIORAL_SPIKE">Behavioral Spike</option>
+              <option value="EXCEPTION_STREAK">Exception Streak</option>
+              <option value="PERSONAL_DEVIATION">Personal Deviation</option>
+              <option value="CLASS_DEVIATION">Class Deviation</option>
+            </select>
+          </div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Risk Tier</th>
+              <th>Student ID</th>
+              <th>Class</th>
+              <th>Date</th>
+              <th>Anomaly Category</th>
+              <th>Source</th>
+              <th>Score</th>
+              <th>Review Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="queue-table-body">
+            <!-- Rendered by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 3: STUDENT CONTEXT VIEW -->
+    <section id="view-student" class="view-section">
+      <div class="glass-card" style="margin-bottom:24px;">
+        <h3 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:12px;">Student Lookup</h3>
+        <div style="display:flex; gap:12px;">
+          <input type="text" id="student-search-input" placeholder="Enter Student ID (e.g. STU_100)..." style="flex:1; padding:10px 16px; background:rgba(15,23,42,0.8); border:1px solid var(--border-card); border-radius:var(--radius-md); color:#fff; font-size:0.9rem;">
+          <button id="btn-student-search" class="btn-action" style="padding:10px 20px;">Search Profile</button>
+        </div>
+      </div>
+
+      <div id="student-profile-container" style="display:none;">
+        <div class="card-grid">
+          <div class="glass-card">
+            <div class="metric-label">Student ID</div>
+            <div class="metric-value" style="font-size:1.5rem;" id="stu-prof-id">--</div>
+            <div class="metric-subtext" id="stu-prof-class">--</div>
+          </div>
+          <div class="glass-card">
+            <div class="metric-label">Total Observations</div>
+            <div class="metric-value" style="font-size:1.5rem;" id="stu-prof-obs">--</div>
+            <div class="metric-subtext">School Days Tracked</div>
+          </div>
+          <div class="glass-card">
+            <div class="metric-label">Historical Exception Rate</div>
+            <div class="metric-value" style="font-size:1.5rem; color:var(--accent-primary);" id="stu-prof-rate">--</div>
+            <div class="metric-subtext">Source Exception Marks</div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="margin-bottom:24px;">
+          <h3 style="font-family:var(--font-heading); font-size:1.1rem; margin-bottom:16px;">Longitudinal Observation Timeline</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Source Attendance Status</th>
+                <th>Raw Token</th>
+                <th>School Day</th>
+              </tr>
+            </thead>
+            <tbody id="stu-timeline-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: COMPLIANCE PREVIEW VIEW -->
+    <section id="view-reports" class="view-section">
+      <div class="glass-card">
+        <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:12px;">Administrator Compliance Decision-Support Report</h3>
+        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:20px;">
+          Summarizes human review activity and review status distributions before generating compliance filings.
+        </p>
+
+        <div class="card-grid">
+          <div class="glass-card">
+            <div class="metric-label">Reviewed Alerts</div>
+            <div class="metric-value" style="color:var(--status-validated);" id="rep-reviewed">--</div>
+          </div>
+          <div class="glass-card">
+            <div class="metric-label">Pending Review</div>
+            <div class="metric-value" style="color:var(--status-unreviewed);" id="rep-pending">--</div>
+          </div>
+          <div class="glass-card">
+            <div class="metric-label">Validated Anomalies</div>
+            <div class="metric-value" style="color:var(--status-validated);" id="rep-validated">--</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: AUDIT LOG VIEW -->
+    <section id="view-audit" class="view-section">
+      <div class="table-container">
+        <div style="padding:20px 24px; border-bottom:1px solid var(--border-card);">
+          <h3 style="font-family:var(--font-heading); font-size:1.1rem;">Immutable Review Audit Trail</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted);">Traceable record of all administrator status transitions and justification notes.</p>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Anomaly ID</th>
+              <th>Action</th>
+              <th>Previous Status</th>
+              <th>New Status</th>
+              <th>Reviewer</th>
+              <th>Justification Note</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 6: SYSTEM PROVENANCE VIEW -->
+    <section id="view-info" class="view-section">
+      <div class="glass-card">
+        <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:16px;">Technical Provenance & Phase 4 Frozen Metadata</h3>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; font-size:0.9rem;">
+          <div>
+            <p><strong>Model Version:</strong> <span id="info-model-version">Isolation Forest v1.0.0</span></p>
+
+            <p style="margin-top:8px;"><strong>Training Date Range:</strong> <span id="info-train-range">August 1 – September 30, 2025</span></p>
+            <p style="margin-top:8px;"><strong>Validation Date Range:</strong> <span id="info-val-range">October 1 – October 31, 2025</span></p>
+            <p style="margin-top:8px;"><strong>Test Date Range:</strong> <span id="info-test-range">November 1 – November 30, 2025</span></p>
+            <p style="margin-top:8px;"><strong>Random Seed:</strong> <span id="info-seed">42</span></p>
+          </div>
+
+          <div>
+            <p><strong>Operating Threshold:</strong> <span id="info-thresh">-0.001252 (99th percentile validation)</span></p>
+            <p style="margin-top:8px;"><strong>Regression Assertions:</strong> <span id="info-tests" style="color:var(--status-validated); font-weight:600;">21 / 21 Passed</span></p>
+            <p style="margin-top:8px;"><strong>Experimental Integrity:</strong> Ground truth labels hidden from operational view.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <h4 style="font-size:0.95rem; font-weight:600; margin-bottom:10px;">Production Rules R001–R008</h4>
+          <ul style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; padding-left:20px;" id="info-rules-list"></ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- DRAWER / MODAL ANOMALY DETAIL PANEL -->
+  <div id="detail-backdrop" class="modal-backdrop">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div>
+          <h3 style="font-family:var(--font-heading); font-size:1.3rem;" id="drawer-anomaly-id">ANOM_0001</h3>
+          <p style="font-size:0.82rem; color:var(--text-muted);" id="drawer-subtitle">Student Record Evidence Panel</p>
+        </div>
+        <button id="btn-close-drawer" class="drawer-close">&times;</button>
+      </div>
+
+      <!-- Identity & Risk Box -->
+      <div class="card-grid" style="grid-template-columns:1fr 1fr; margin-bottom:20px;">
+        <div class="glass-card" style="padding:16px;">
+          <div class="metric-label">Student ID</div>
+          <div style="font-weight:700; font-size:1.1rem; color:#fff;" id="drawer-stu-id">--</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);" id="drawer-class-id">--</div>
+        </div>
+        <div class="glass-card" style="padding:16px;">
+          <div class="metric-label">Risk Tier</div>
+          <div style="margin-top:6px;" id="drawer-risk-badge">--</div>
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;" id="drawer-score">Score: --</div>
+        </div>
+      </div>
+
+      <!-- Triggered Rules Evidence Section -->
+      <h4 style="font-size:0.95rem; font-weight:600; margin-bottom:12px; color:#fff;">Triggered Evidence & Rules</h4>
+      <div id="drawer-evidence-container">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <!-- Temporal Features Context Box -->
+      <h4 style="font-size:0.95rem; font-weight:600; margin-top:16px; margin-bottom:12px; color:#fff;">Temporal & Peer Context Features</h4>
+      <div class="evidence-box">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.82rem;" id="drawer-temporal-grid">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+
+      <!-- Review Action Form -->
+      <div class="review-form">
+        <h4 style="font-size:0.95rem; font-weight:600; margin-bottom:12px; color:#fff;">Administrator Review Action</h4>
+        
+        <div class="form-group">
+          <label for="review-status-select">Transition Review Status</label>
+          <select id="review-status-select" class="select-custom" style="width:100%;">
+            <option value="UNDER_REVIEW">UNDER_REVIEW — Review in progress</option>
+            <option value="VALIDATED">VALIDATED — Confirmed actionable anomaly</option>
+            <option value="REJECTED">REJECTED — Determined non-actionable alert</option>
+            <option value="INVESTIGATE">INVESTIGATE — Requires further inquiry</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="review-note-input">Administrator Justification Note</label>
+          <textarea id="review-note-input" placeholder="Enter administrative review rationale and source register notes..."></textarea>
+        </div>
+
+        <button id="btn-save-review" class="btn-submit">Submit Review Decision</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

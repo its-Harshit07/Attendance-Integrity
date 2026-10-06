@@ -1,0 +1,123 @@
+date,month,day_of_week,is_school_day,reason
+2025-08-01,AGUSTUS,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-08-02,AGUSTUS,Saturday,FALSE,Weekend
+2025-08-03,AGUSTUS,Sunday,FALSE,Weekend
+2025-08-04,AGUSTUS,Monday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-08-05,AGUSTUS,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-08-06,AGUSTUS,Wednesday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-08-07,AGUSTUS,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-08-08,AGUSTUS,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-08-09,AGUSTUS,Saturday,FALSE,Weekend
+2025-08-10,AGUSTUS,Sunday,FALSE,Weekend
+2025-08-11,AGUSTUS,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-08-12,AGUSTUS,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-08-13,AGUSTUS,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-08-14,AGUSTUS,Thursday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-08-15,AGUSTUS,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-08-16,AGUSTUS,Saturday,FALSE,Weekend
+2025-08-17,AGUSTUS,Sunday,FALSE,Weekend
+2025-08-18,AGUSTUS,Monday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-08-19,AGUSTUS,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-08-20,AGUSTUS,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-08-21,AGUSTUS,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-08-22,AGUSTUS,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-08-23,AGUSTUS,Saturday,FALSE,Weekend
+2025-08-24,AGUSTUS,Sunday,FALSE,Weekend
+2025-08-25,AGUSTUS,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-08-26,AGUSTUS,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-08-27,AGUSTUS,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-08-28,AGUSTUS,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-08-29,AGUSTUS,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-08-30,AGUSTUS,Saturday,FALSE,Weekend
+2025-08-31,AGUSTUS,Sunday,FALSE,Weekend
+2025-09-01,SEPTEMBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-09-02,SEPTEMBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-03,SEPTEMBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-04,SEPTEMBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-09-05,SEPTEMBER,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-09-06,SEPTEMBER,Saturday,FALSE,Weekend
+2025-09-07,SEPTEMBER,Sunday,FALSE,Weekend
+2025-09-08,SEPTEMBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-09-09,SEPTEMBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-10,SEPTEMBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-11,SEPTEMBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-09-12,SEPTEMBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-09-13,SEPTEMBER,Saturday,FALSE,Weekend
+2025-09-14,SEPTEMBER,Sunday,FALSE,Weekend
+2025-09-15,SEPTEMBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-09-16,SEPTEMBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-17,SEPTEMBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-18,SEPTEMBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-09-19,SEPTEMBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-09-20,SEPTEMBER,Saturday,FALSE,Weekend
+2025-09-21,SEPTEMBER,Sunday,FALSE,Weekend
+2025-09-22,SEPTEMBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-09-23,SEPTEMBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-24,SEPTEMBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-09-25,SEPTEMBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-09-26,SEPTEMBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-09-27,SEPTEMBER,Saturday,FALSE,Weekend
+2025-09-28,SEPTEMBER,Sunday,FALSE,Weekend
+2025-09-29,SEPTEMBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-09-30,SEPTEMBER,Tuesday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-10-01,OKTOBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-02,OKTOBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-10-03,OKTOBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-10-04,OKTOBER,Saturday,FALSE,Weekend
+2025-10-05,OKTOBER,Sunday,FALSE,Weekend
+2025-10-06,OKTOBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-10-07,OKTOBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-08,OKTOBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-09,OKTOBER,Thursday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-10-10,OKTOBER,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-10-11,OKTOBER,Saturday,FALSE,Weekend
+2025-10-12,OKTOBER,Sunday,FALSE,Weekend
+2025-10-13,OKTOBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-10-14,OKTOBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-15,OKTOBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-16,OKTOBER,Thursday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-10-17,OKTOBER,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-10-18,OKTOBER,Saturday,FALSE,Weekend
+2025-10-19,OKTOBER,Sunday,FALSE,Weekend
+2025-10-20,OKTOBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-10-21,OKTOBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-22,OKTOBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-23,OKTOBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-10-24,OKTOBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-10-25,OKTOBER,Saturday,FALSE,Weekend
+2025-10-26,OKTOBER,Sunday,FALSE,Weekend
+2025-10-27,OKTOBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-10-28,OKTOBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-10-29,OKTOBER,Wednesday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-10-30,OKTOBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-10-31,OKTOBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-11-01,NOVEMBER,Saturday,FALSE,Weekend
+2025-11-02,NOVEMBER,Sunday,FALSE,Weekend
+2025-11-03,NOVEMBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-11-04,NOVEMBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-11-05,NOVEMBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-11-06,NOVEMBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-11-07,NOVEMBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-11-08,NOVEMBER,Saturday,FALSE,Weekend
+2025-11-09,NOVEMBER,Sunday,FALSE,Weekend
+2025-11-10,NOVEMBER,Monday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-11,NOVEMBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-11-12,NOVEMBER,Wednesday,TRUE,Verified Exception Recorded in Source Register
+2025-11-13,NOVEMBER,Thursday,TRUE,Verified Exception Recorded in Source Register
+2025-11-14,NOVEMBER,Friday,TRUE,Verified Exception Recorded in Source Register
+2025-11-15,NOVEMBER,Saturday,FALSE,Weekend
+2025-11-16,NOVEMBER,Sunday,FALSE,Weekend
+2025-11-17,NOVEMBER,Monday,TRUE,Verified Exception Recorded in Source Register
+2025-11-18,NOVEMBER,Tuesday,TRUE,Verified Exception Recorded in Source Register
+2025-11-19,NOVEMBER,Wednesday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-20,NOVEMBER,Thursday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-21,NOVEMBER,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-22,NOVEMBER,Saturday,FALSE,Weekend
+2025-11-23,NOVEMBER,Sunday,FALSE,Weekend
+2025-11-24,NOVEMBER,Monday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-25,NOVEMBER,Tuesday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-26,NOVEMBER,Wednesday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-27,NOVEMBER,Thursday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-28,NOVEMBER,Friday,UNKNOWN,No Explicit Source Schedule or Exception Evidence
+2025-11-29,NOVEMBER,Saturday,FALSE,Weekend
+2025-11-30,NOVEMBER,Sunday,FALSE,Weekend
