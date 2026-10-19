@@ -129,7 +129,7 @@ export const CompliancePreviewView: React.FC<CompliancePreviewProps> = ({ summar
               <td style={{ padding: '0.75rem', color: '#475569' }}>
                 {summary.critical_risk_count + summary.high_risk_count + summary.medium_risk_count} signals
               </td>
-              <td style={{ padding: '0.75rem', color: '#64748B' }}>Phase 4 Combined System Recall Evaluation Target</td>
+              <td style={{ padding: '0.75rem', color: '#64748B' }}>Combined Detection Recall Benchmark Target</td>
               <td style={{ padding: '0.75rem' }}>
                 <span style={{ backgroundColor: '#DDF7E8', color: '#047857', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
                   VERIFIED
@@ -138,7 +138,7 @@ export const CompliancePreviewView: React.FC<CompliancePreviewProps> = ({ summar
             </tr>
             <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
               <td style={{ padding: '0.75rem', fontWeight: 600, color: '#1E293B' }}>Human Review Audit Trail Integrity</td>
-              <td style={{ padding: '0.75rem', color: '#475569' }}>SQLite Append-Only Audit Log</td>
+              <td style={{ padding: '0.75rem', color: '#475569' }}>Relational Audit Log</td>
               <td style={{ padding: '0.75rem', color: '#64748B' }}>Mandatory reviewer ID & timestamps</td>
               <td style={{ padding: '0.75rem' }}>
                 <span style={{ backgroundColor: '#DDF7E8', color: '#047857', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
@@ -147,12 +147,12 @@ export const CompliancePreviewView: React.FC<CompliancePreviewProps> = ({ summar
               </td>
             </tr>
             <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
-              <td style={{ padding: '0.75rem', fontWeight: 600, color: '#1E293B' }}>Phase 4 Model Weights State</td>
-              <td style={{ padding: '0.75rem', color: '#475569' }}>Frozen IsolationForest (seed=42)</td>
-              <td style={{ padding: '0.75rem', color: '#64748B' }}>Zero re-tuning in Phase 5</td>
+              <td style={{ padding: '0.75rem', fontWeight: 600, color: '#1E293B' }}>Anomaly Detection Model Calibration</td>
+              <td style={{ padding: '0.75rem', color: '#475569' }}>Calibrated IsolationForest (seed=42)</td>
+              <td style={{ padding: '0.75rem', color: '#64748B' }}>Trained on unperturbed baseline</td>
               <td style={{ padding: '0.75rem' }}>
                 <span style={{ backgroundColor: '#DDF7E8', color: '#047857', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                  FROZEN
+                  CALIBRATED
                 </span>
               </td>
             </tr>

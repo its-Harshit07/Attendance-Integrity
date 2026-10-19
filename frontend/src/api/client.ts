@@ -4,7 +4,8 @@ import type {
   AnomalyDetail,
   AuditLogEntry,
   StudentContext,
-  SystemInfo
+  SystemInfo,
+  HealthStatus
 } from '../types/dashboard';
 
 function getApiBaseUrl(): string {
@@ -123,4 +124,10 @@ export async function fetchSystemInfo(): Promise<SystemInfo> {
   if (json.status !== 'success') throw new Error(json.detail || 'Failed to fetch system info');
   return json;
 }
+
+export async function fetchHealth(): Promise<HealthStatus> {
+  const res = await fetch(`${API_BASE}/health`);
+  return await parseJsonResponse(res, 'Failed to fetch system health');
+}
+
 

@@ -93,6 +93,13 @@ export interface DashboardSummary {
   combined_detected: number;
 }
 
+export interface HealthStatus {
+  status: string;
+  service: string;
+  database: string;
+  model: string;
+}
+
 export interface SystemInfo {
   model_version: string;
   training_date_range: string;

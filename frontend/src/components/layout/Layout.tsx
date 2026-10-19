@@ -93,7 +93,7 @@ export const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, childre
             })}
           </nav>
 
-          {/* System Badge */}
+          {/* System Status */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span
               style={{
@@ -105,7 +105,7 @@ export const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, childre
               }}
             />
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#047857' }}>
-              Phase 4 Frozen (v1.0.0)
+              System Operational
             </span>
           </div>
         </div>
@@ -136,7 +136,7 @@ export const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, childre
           color: '#64748B'
         }}
       >
-        Attendance Integrity System • Phase 5 Decision Support Workflow • All Phase 4 rules and model weights are strictly frozen.
+        Attendance Integrity System • AI-Assisted Attendance Review
       </footer>
     </div>
   );
