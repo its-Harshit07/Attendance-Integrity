@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { StudentContext } from '../../types/dashboard';
 import { fetchStudentContext } from '../../api/client';
+import { StudentContextSkeleton } from '../common/Skeleton';
 
 interface StudentContextProps {
   initialStudentId?: string;
@@ -99,24 +100,15 @@ export const StudentContextView: React.FC<StudentContextProps> = ({
       </div>
 
       {errorMsg && (
-        <div
-          style={{
-            backgroundColor: '#FFE1E1',
-            color: '#991B1B',
-            border: '1px solid #FCA5A5',
-            padding: '1rem',
-            borderRadius: '8px',
-            fontSize: '0.875rem'
-          }}
-        >
-          {errorMsg}
+        <div className="skeleton-inline-error" role="alert">
+          <span className="skeleton-inline-error-msg">{errorMsg}</span>
         </div>
       )}
 
       {loading && (
-        <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-          Fetching student attendance context...
-        </div>
+        <section aria-busy="true" aria-label="Loading student context">
+          <StudentContextSkeleton />
+        </section>
       )}
 
       {studentData && !loading && (

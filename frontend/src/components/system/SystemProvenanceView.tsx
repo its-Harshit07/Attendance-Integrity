@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { SystemInfo } from '../../types/dashboard';
 import { fetchSystemInfo } from '../../api/client';
+import { SystemProvenanceSkeleton } from '../common/Skeleton';
 
 export const SystemProvenanceView: React.FC = () => {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadSystemInfo = useCallback(() => {
+    setLoading(true);
+    setErrorMsg(null);
     fetchSystemInfo()
       .then((data) => {
         setInfo(data);
@@ -19,14 +22,37 @@ export const SystemProvenanceView: React.FC = () => {
       });
   }, []);
 
+  useEffect(() => {
+    loadSystemInfo();
+  }, [loadSystemInfo]);
+
   if (loading) {
-    return <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>Loading system provenance parameters...</div>;
+    return (
+      <section aria-busy="true" aria-label="Loading system provenance">
+        <SystemProvenanceSkeleton />
+      </section>
+    );
   }
 
   if (errorMsg || !info) {
     return (
-      <div style={{ padding: '1rem', backgroundColor: '#FFE1E1', color: '#991B1B', borderRadius: '8px' }}>
-        {errorMsg || 'Failed to load system info'}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1E293B', margin: '0 0 0.25rem 0' }}>
+            System Provenance &amp; Model Lineage
+          </h1>
+          <p style={{ fontSize: '0.875rem', color: '#64748B', margin: 0 }}>
+            Frozen Phase 4 architecture parameters, validation split boundaries, feature definitions, and test state.
+          </p>
+        </div>
+        <div className="skeleton-inline-error" role="alert">
+          <span className="skeleton-inline-error-msg">
+            <strong>Failed to load system info.</strong> {errorMsg}
+          </span>
+          <button className="skeleton-retry-btn" onClick={loadSystemInfo}>
+            Retry
+          </button>
+        </div>
       </div>
     );
   }

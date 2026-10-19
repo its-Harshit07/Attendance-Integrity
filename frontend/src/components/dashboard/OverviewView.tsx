@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { DashboardSummary, Anomaly } from '../../types/dashboard';
+import { OverviewSkeleton } from '../common/Skeleton';
 
 interface OverviewProps {
   summary: DashboardSummary | null;
@@ -11,6 +12,9 @@ interface OverviewProps {
   onRetry?: () => void;
 }
 
+/** Milliseconds before the "Connecting to the service…" notice appears */
+const SLOW_NOTICE_DELAY = 8000;
+
 export const OverviewView: React.FC<OverviewProps> = ({
   summary,
   recentAnomalies,
@@ -20,40 +24,59 @@ export const OverviewView: React.FC<OverviewProps> = ({
   error,
   onRetry
 }) => {
+  const [showSlowNotice, setShowSlowNotice] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowSlowNotice(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowSlowNotice(true), SLOW_NOTICE_DELAY);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Show skeleton while data is loading
   if (loading) {
     return (
-      <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-        Loading dashboard metrics...
-      </div>
+      <section aria-busy="true" aria-label="Loading dashboard overview">
+        {showSlowNotice && (
+          <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span className="skeleton-connecting-notice">
+              <span className="skeleton-connecting-dot" />
+              Connecting to the service… this may take a moment
+            </span>
+          </div>
+        )}
+        <OverviewSkeleton />
+      </section>
     );
   }
 
+  // Inline error — keeps the shell visible
   if (error || !summary) {
     return (
-      <div style={{ padding: '2.5rem', textAlign: 'center', backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '10px', margin: '1rem 0' }}>
-        <h3 style={{ color: '#991B1B', margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 600 }}>
-          Unable to Load Dashboard Metrics
-        </h3>
-        <p style={{ color: '#7F1D1D', fontSize: '0.875rem', margin: '0 0 1.25rem 0', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
-          {error || 'Failed to establish connection with the REST API backend.'}
-        </p>
-        {onRetry && (
-          <button
-            onClick={onRetry}
-            style={{
-              padding: '0.5rem 1.25rem',
-              backgroundColor: '#DC2626',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '6px',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }}
-          >
-            Retry Connection
-          </button>
-        )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        {/* Page header still visible */}
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1E293B', margin: '0 0 0.25rem 0' }}>
+            Dashboard Overview
+          </h1>
+          <p style={{ fontSize: '0.875rem', color: '#64748B', margin: 0 }}>
+            Real-time summary of attendance anomalies, review signal queue, and compliance metrics.
+          </p>
+        </div>
+        {/* Compact inline error banner */}
+        <div className="skeleton-inline-error" role="alert">
+          <span className="skeleton-inline-error-msg">
+            <strong>Unable to load dashboard metrics.</strong>{' '}
+            {error || 'Failed to establish connection with the REST API backend.'}
+          </span>
+          {onRetry && (
+            <button className="skeleton-retry-btn" onClick={onRetry}>
+              Retry
+            </button>
+          )}
+        </div>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Anomaly } from '../../types/dashboard';
 import type { AnomalyFilterParams } from '../../api/client';
+import { AnomalyQueueTableSkeleton } from '../common/Skeleton';
 
 interface AnomalyQueueProps {
   anomalies: Anomaly[];
@@ -329,15 +330,15 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={9} style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-                    Loading anomaly signals...
-                  </td>
-                </tr>
+                <AnomalyQueueTableSkeleton />
               ) : error ? (
                 <tr>
-                  <td colSpan={9} style={{ padding: '3rem', textAlign: 'center', color: '#991B1B', backgroundColor: '#FEF2F2' }}>
-                    Failed to load anomaly queue: {error}
+                  <td colSpan={9} style={{ padding: '0' }}>
+                    <div className="skeleton-inline-error" style={{ margin: '1rem' }} role="alert">
+                      <span className="skeleton-inline-error-msg">
+                        <strong>Failed to load anomaly queue.</strong> {error}
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ) : anomalies.length === 0 ? (

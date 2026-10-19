@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { AuditLogEntry } from '../../types/dashboard';
 import { fetchAuditLog } from '../../api/client';
+import { AuditLogTableSkeleton } from '../common/Skeleton';
 
 export const AuditLogView: React.FC = () => {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
@@ -8,7 +9,7 @@ export const AuditLogView: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = useCallback(async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
@@ -19,11 +20,11 @@ export const AuditLogView: React.FC = () => {
       setLoading(false);
       setErrorMsg(err.message || 'Failed to load audit logs');
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadAuditLogs();
-  }, []);
+  }, [loadAuditLogs]);
 
   const filteredLogs = logs.filter(
     (log) =>
@@ -90,17 +91,11 @@ export const AuditLogView: React.FC = () => {
       </div>
 
       {errorMsg && (
-        <div
-          style={{
-            backgroundColor: '#FFE1E1',
-            color: '#991B1B',
-            border: '1px solid #FCA5A5',
-            padding: '1rem',
-            borderRadius: '8px',
-            fontSize: '0.875rem'
-          }}
-        >
-          {errorMsg}
+        <div className="skeleton-inline-error" role="alert">
+          <span className="skeleton-inline-error-msg">{errorMsg}</span>
+          <button className="skeleton-retry-btn" onClick={loadAuditLogs}>
+            Retry
+          </button>
         </div>
       )}
 
@@ -128,11 +123,7 @@ export const AuditLogView: React.FC = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-                    Loading audit trail logs...
-                  </td>
-                </tr>
+                <AuditLogTableSkeleton />
               ) : filteredLogs.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>

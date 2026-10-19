@@ -8,8 +8,15 @@ structured logging, and clean error handling.
 """
 
 import os
+import sys
 import logging
 from contextlib import asynccontextmanager
+
+# Ensure project root is in sys.path when running as a direct script
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,7 +32,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("attendance_integrity")
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FRONTEND_DIST = os.path.join(BASE_DIR, "frontend", "dist")
 STATIC_DIR = os.getenv("FRONTEND_DIST_DIR", FRONTEND_DIST if os.path.exists(FRONTEND_DIST) else os.path.join(BASE_DIR, "static"))
 

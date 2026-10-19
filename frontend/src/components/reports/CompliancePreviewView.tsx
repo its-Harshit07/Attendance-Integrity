@@ -1,5 +1,6 @@
 import React from 'react';
 import type { DashboardSummary } from '../../types/dashboard';
+import { CompliancePreviewSkeleton } from '../common/Skeleton';
 
 interface CompliancePreviewProps {
   summary: DashboardSummary | null;
@@ -7,7 +8,11 @@ interface CompliancePreviewProps {
 
 export const CompliancePreviewView: React.FC<CompliancePreviewProps> = ({ summary }) => {
   if (!summary) {
-    return <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>Loading compliance summary...</div>;
+    return (
+      <section aria-busy="true" aria-label="Loading compliance summary">
+        <CompliancePreviewSkeleton />
+      </section>
+    );
   }
 
   const totalReviewed = summary.validated_count + summary.rejected_count + summary.investigate_count;
