@@ -1,124 +1,101 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { AuditLogEntry } from '../../types/dashboard';
 import { fetchAuditLog } from '../../api/client';
 import { AuditLogTableSkeleton } from '../common/Skeleton';
+import { formatEnumLabel, getStatusBadgeClass } from '../../utils/formatters';
 
-export const AuditLogView: React.FC = () => {
+interface AuditLogViewProps {
+  onSelectAnomaly?: (anomalyId: string) => void;
+}
+
+export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) => {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [search, setSearch] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const loadAuditLogs = useCallback(async () => {
-    setLoading(true);
-    setErrorMsg(null);
-    try {
-      const data = await fetchAuditLog();
-      setLogs(data);
-      setLoading(false);
-    } catch (err: any) {
-      setLoading(false);
-      setErrorMsg(err.message || 'Failed to load audit logs');
-    }
-  }, []);
+  const [refreshTick, setRefreshTick] = useState<number>(0);
 
   useEffect(() => {
-    loadAuditLogs();
-  }, [loadAuditLogs]);
+    let active = true;
+    fetchAuditLog()
+      .then((data) => {
+        if (!active) return;
+        setLogs(data);
+        setErrorMsg(null);
+        setLoading(false);
+      })
+      .catch((err: any) => {
+        if (!active) return;
+        setErrorMsg(err.message || 'Failed to load audit log');
+        setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [refreshTick]);
 
-  const filteredLogs = logs.filter(
-    (log) =>
-      log.anomaly_id.toLowerCase().includes(search.toLowerCase()) ||
-      log.reviewer.toLowerCase().includes(search.toLowerCase()) ||
-      log.note.toLowerCase().includes(search.toLowerCase()) ||
-      log.action.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleRefresh = () => {
+    setLoading(true);
+    setErrorMsg(null);
+    setRefreshTick((t) => t + 1);
+  };
+
+  const query = search.trim().toLowerCase();
+  const filteredLogs = query
+    ? logs.filter(
+        (log) =>
+          log.anomaly_id.toLowerCase().includes(query) ||
+          log.reviewer.toLowerCase().includes(query) ||
+          log.note.toLowerCase().includes(query) ||
+          log.action.toLowerCase().includes(query) ||
+          log.new_status.toLowerCase().includes(query)
+      )
+    : logs;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1E293B', margin: '0 0 0.25rem 0' }}>
-          Immutable System Audit Log
-        </h1>
-        <p style={{ fontSize: '0.875rem', color: '#64748B', margin: 0 }}>
-          Chronological append-only record of all human review decisions, status transitions, and administrative rationales.
-        </p>
-      </div>
-
-      {/* Toolbar */}
-      <div
-        style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E5E7EB',
-          borderRadius: '10px',
-          padding: '1.25rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Filter audit log by Anomaly ID, Reviewer, or Rationale text..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: '400px',
-            padding: '0.6rem 0.85rem',
-            borderRadius: '6px',
-            border: '1px solid #CBD5E1',
-            fontSize: '0.875rem',
-            outline: 'none'
-          }}
-        />
-        <button
-          onClick={loadAuditLogs}
-          style={{
-            padding: '0.6rem 1rem',
-            backgroundColor: '#EFF6FF',
-            color: '#2563EB',
-            border: '1px solid #BFDBFE',
-            borderRadius: '6px',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            cursor: 'pointer'
-          }}
-        >
-          Refresh Log
+    <div className="section-stack">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Audit Log</h1>
+          <p className="page-subtitle">Chronological record of review decisions and status changes.</p>
+        </div>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={handleRefresh}>
+          Refresh
         </button>
       </div>
 
+      <div className="toolbar-card">
+        <input
+          type="text"
+          className="input-dark input-search"
+          placeholder="Search by Anomaly ID, reviewer, outcome, or note…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          aria-label="Search audit log"
+        />
+        <span className="table-panel-meta mono">{filteredLogs.length} entries</span>
+      </div>
+
       {errorMsg && (
-        <div className="skeleton-inline-error" role="alert">
-          <span className="skeleton-inline-error-msg">{errorMsg}</span>
-          <button className="skeleton-retry-btn" onClick={loadAuditLogs}>
+        <div className="inline-error" role="alert">
+          <span>
+            <strong>Failed to load audit log.</strong> {errorMsg}
+          </span>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={handleRefresh}>
             Retry
           </button>
         </div>
       )}
 
-      {/* Audit Log Table */}
-      <div
-        style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E5E7EB',
-          borderRadius: '10px',
-          padding: '1.5rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}
-      >
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+      <div className="table-panel">
+        <div className="table-scroll">
+          <table className="data-table">
             <thead>
-              <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E5E7EB' }}>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Audit ID</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Timestamp</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Anomaly ID</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Reviewer</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Transition</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Reviewer Note / Rationale</th>
+              <tr>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>Record</th>
+                <th>Review Outcome</th>
               </tr>
             </thead>
             <tbody>
@@ -126,36 +103,44 @@ export const AuditLogView: React.FC = () => {
                 <AuditLogTableSkeleton />
               ) : filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-                    No audit log entries recorded yet.
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    No audit log entries found.
                   </td>
                 </tr>
               ) : (
                 filteredLogs.map((log) => (
-                  <tr key={log.audit_id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '0.75rem', fontWeight: 600, color: '#64748B', fontFamily: 'monospace' }}>
-                      #{log.audit_id}
+                  <tr
+                    key={log.audit_id}
+                    className={onSelectAnomaly ? 'clickable' : undefined}
+                    onClick={onSelectAnomaly ? () => onSelectAnomaly(log.anomaly_id) : undefined}
+                  >
+                    <td className="mono" style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                      {log.timestamp}
                     </td>
-                    <td style={{ padding: '0.75rem', color: '#475569', whiteSpace: 'nowrap' }}>{log.timestamp}</td>
-                    <td style={{ padding: '0.75rem', fontWeight: 600, color: '#1E293B', fontFamily: 'monospace' }}>
+                    <td>
+                      <div className="cell-primary">{formatEnumLabel(log.action)}</div>
+                      <div className="cell-sub mono">
+                        {log.previous_status} &rarr; {log.new_status}
+                      </div>
+                    </td>
+                    <td className="mono" style={{ fontWeight: 600 }}>
                       {log.anomaly_id}
                     </td>
-                    <td style={{ padding: '0.75rem', fontWeight: 600, color: '#2563EB' }}>{log.reviewer}</td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <span
-                        style={{
-                          backgroundColor: '#F1F5F9',
-                          color: '#334155',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600
-                        }}
-                      >
-                        {log.previous_status} &rarr; {log.new_status}
-                      </span>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <span className={getStatusBadgeClass(log.new_status)}>
+                          {formatEnumLabel(log.new_status)}
+                        </span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                          by {log.reviewer}
+                        </span>
+                      </div>
+                      {log.note && (
+                        <div className="cell-sub" style={{ color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                          {log.note}
+                        </div>
+                      )}
                     </td>
-                    <td style={{ padding: '0.75rem', color: '#334155' }}>{log.note}</td>
                   </tr>
                 ))
               )}

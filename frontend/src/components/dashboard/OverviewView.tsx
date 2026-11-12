@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { DashboardSummary, Anomaly } from '../../types/dashboard';
 import { OverviewSkeleton } from '../common/Skeleton';
+import { formatEnumLabel, getRiskBadgeClass, getStatusBadgeClass } from '../../utils/formatters';
 
 interface OverviewProps {
   summary: DashboardSummary | null;
@@ -12,7 +13,6 @@ interface OverviewProps {
   onRetry?: () => void;
 }
 
-/** Milliseconds before the "Connecting to the service…" notice appears */
 const SLOW_NOTICE_DELAY = 8000;
 
 export const OverviewView: React.FC<OverviewProps> = ({
@@ -28,22 +28,23 @@ export const OverviewView: React.FC<OverviewProps> = ({
 
   useEffect(() => {
     if (!loading) {
-      setShowSlowNotice(false);
       return;
     }
     const timer = setTimeout(() => setShowSlowNotice(true), SLOW_NOTICE_DELAY);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      setShowSlowNotice(false);
+    };
   }, [loading]);
 
-  // Show skeleton while data is loading
   if (loading) {
     return (
       <section aria-busy="true" aria-label="Loading dashboard overview">
         {showSlowNotice && (
-          <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
             <span className="skeleton-connecting-notice">
               <span className="skeleton-connecting-dot" />
-              Connecting to the service… this may take a moment
+              Connecting to service…
             </span>
           </div>
         )}
@@ -52,27 +53,21 @@ export const OverviewView: React.FC<OverviewProps> = ({
     );
   }
 
-  // Inline error — keeps the shell visible
   if (error || !summary) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        {/* Page header still visible */}
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1E293B', margin: '0 0 0.25rem 0' }}>
-            Dashboard Overview
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: '#64748B', margin: 0 }}>
-            Real-time summary of attendance anomalies, review signal queue, and compliance metrics.
-          </p>
+      <div className="section-stack">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Overview</h1>
+            <p className="page-subtitle">Monitor attendance integrity and review flagged records.</p>
+          </div>
         </div>
-        {/* Compact inline error banner */}
-        <div className="skeleton-inline-error" role="alert">
-          <span className="skeleton-inline-error-msg">
-            <strong>Unable to load dashboard metrics.</strong>{' '}
-            {error || 'Failed to establish connection with the REST API backend.'}
+        <div className="inline-error" role="alert">
+          <span>
+            <strong>Unable to load metrics.</strong> {error || 'Backend connection failed.'}
           </span>
           {onRetry && (
-            <button className="skeleton-retry-btn" onClick={onRetry}>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onRetry}>
               Retry
             </button>
           )}
@@ -81,409 +76,140 @@ export const OverviewView: React.FC<OverviewProps> = ({
     );
   }
 
-  // Calculate high priority total
-  const highPriorityTotal = summary.critical_risk_count + summary.high_risk_count;
-  const resolvedTotal = summary.validated_count + summary.rejected_count;
-  const actionableReviewSignals = summary.critical_risk_count + summary.high_risk_count + summary.medium_risk_count;
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Header Banner */}
-      <div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1E293B', margin: '0 0 0.25rem 0' }}>
-          Dashboard Overview
-        </h1>
-        <p style={{ fontSize: '0.875rem', color: '#64748B', margin: 0 }}>
-          Real-time summary of attendance anomalies, review signal queue, and compliance metrics.
-        </p>
+    <div className="section-stack">
+      {/* Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Overview</h1>
+          <p className="page-subtitle">Monitor attendance integrity and review flagged records.</p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-cyan btn-sm"
+          onClick={() => onNavigateToQueue({ status: 'UNREVIEWED' })}
+        >
+          Open Anomaly Queue
+        </button>
       </div>
 
-      {/* Metric Cards Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap: '1.25rem'
-        }}
-      >
-        {/* Card 1: Review Signals */}
-        <div
-          onClick={() => onNavigateToQueue({ status: 'UNREVIEWED' })}
+      {/* Four Compact Metric Cards */}
+      <div className="metrics-grid">
+        <button
+          type="button"
           className="metric-card"
-          style={{
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E5E7EB',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            cursor: 'pointer',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-          }}
+          onClick={() => onNavigateToQueue({})}
         >
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>
-            Actionable Review Signals
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '2rem', fontWeight: 700, color: '#1E293B' }}>{actionableReviewSignals}</span>
-            <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 500 }}>
-              (out of {summary.total_anomalies} total signals)
-            </span>
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748B', lineHeight: 1.4 }}>
-            Unique student-date observations evaluated as Critical, High, or Medium risk.
-          </div>
-        </div>
+          <span className="metric-label">Total Signals</span>
+          <span className="metric-value">{summary.total_anomalies}</span>
+          <span className="metric-foot">{summary.unreviewed_count} unreviewed</span>
+        </button>
 
-        {/* Card 2: Pending Review */}
-        <div
-          onClick={() => onNavigateToQueue({ status: 'UNREVIEWED' })}
+        <button
+          type="button"
           className="metric-card"
-          style={{
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E5E7EB',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            cursor: 'pointer',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-          }}
-        >
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>
-            Pending Review
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#D97706', marginBottom: '0.5rem' }}>
-            {summary.unreviewed_count}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-            Awaiting administrator evaluation in decision workflow.
-          </div>
-        </div>
-
-        {/* Card 3: High Priority Risk */}
-        <div
           onClick={() => onNavigateToQueue({ risk: 'CRITICAL' })}
-          className="metric-card"
-          style={{
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E5E7EB',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            cursor: 'pointer',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-          }}
         >
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>
-            High Priority Risk
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '2rem', fontWeight: 700, color: '#DC2626' }}>{highPriorityTotal}</span>
-            <span
-              style={{
-                fontSize: '0.75rem',
-                backgroundColor: '#FFE1E1',
-                color: '#991B1B',
-                fontWeight: 600,
-                padding: '0.2rem 0.5rem',
-                borderRadius: '4px'
-              }}
-            >
-              {summary.critical_risk_count} Critical • {summary.high_risk_count} High
-            </span>
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-            Severe rule violations and high anomaly confidence score (&ge; 0.90).
-          </div>
-        </div>
+          <span className="metric-label">Critical</span>
+          <span className="metric-value critical">{summary.critical_risk_count}</span>
+          <span className="metric-foot">Immediate review</span>
+        </button>
 
-        {/* Card 4: Resolved Reviews */}
-        <div
-          onClick={() => onNavigateToQueue({ status: 'VALIDATED' })}
+        <button
+          type="button"
           className="metric-card"
-          style={{
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E5E7EB',
-            borderRadius: '10px',
-            padding: '1.25rem',
-            cursor: 'pointer',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            transition: 'transform 0.15s ease, box-shadow 0.15s ease'
-          }}
+          onClick={() => onNavigateToQueue({ risk: 'HIGH' })}
         >
-          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>
-            Resolved Reviews
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#059669', marginBottom: '0.5rem' }}>
-            {resolvedTotal}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-            {summary.validated_count} Validated (True Positive) • {summary.rejected_count} Dismissed (False Positive)
-          </div>
-        </div>
+          <span className="metric-label">High Risk</span>
+          <span className="metric-value high">{summary.high_risk_count}</span>
+          <span className="metric-foot">Priority queue</span>
+        </button>
+
+        <button
+          type="button"
+          className="metric-card"
+          onClick={() => onNavigateToQueue({ risk: 'MEDIUM' })}
+        >
+          <span className="metric-label">Medium Risk</span>
+          <span className="metric-value medium">{summary.medium_risk_count}</span>
+          <span className="metric-foot">{summary.low_risk_count} low risk</span>
+        </button>
       </div>
 
-      {/* Middle Section: Risk Tier Breakdown & Detection Category Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
-        {/* Risk Tier Distribution */}
-        <div
-          style={{
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E5E7EB',
-            borderRadius: '10px',
-            padding: '1.5rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-          }}
-        >
-          <div style={{ fontSize: '1rem', fontWeight: 600, color: '#1E293B', marginBottom: '1rem' }}>
-            Risk Tier Distribution
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                <span style={{ fontWeight: 600, color: '#991B1B' }}>Critical Risk</span>
-                <span style={{ fontWeight: 600, color: '#475569' }}>{summary.critical_risk_count}</span>
-              </div>
-              <div style={{ height: '8px', backgroundColor: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(summary.critical_risk_count / summary.total_anomalies) * 100}%`,
-                    backgroundColor: '#DC2626'
-                  }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                <span style={{ fontWeight: 600, color: '#C2410C' }}>High Risk</span>
-                <span style={{ fontWeight: 600, color: '#475569' }}>{summary.high_risk_count}</span>
-              </div>
-              <div style={{ height: '8px', backgroundColor: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(summary.high_risk_count / summary.total_anomalies) * 100}%`,
-                    backgroundColor: '#EA580C'
-                  }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                <span style={{ fontWeight: 600, color: '#B45309' }}>Medium Risk</span>
-                <span style={{ fontWeight: 600, color: '#475569' }}>{summary.medium_risk_count}</span>
-              </div>
-              <div style={{ height: '8px', backgroundColor: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(summary.medium_risk_count / summary.total_anomalies) * 100}%`,
-                    backgroundColor: '#D97706'
-                  }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                <span style={{ fontWeight: 600, color: '#475569' }}>Low Risk (Statistical Variance)</span>
-                <span style={{ fontWeight: 600, color: '#475569' }}>{summary.low_risk_count}</span>
-              </div>
-              <div style={{ height: '8px', backgroundColor: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(summary.low_risk_count / summary.total_anomalies) * 100}%`,
-                    backgroundColor: '#94A3B8'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Detection Method & Category Breakdown */}
-        <div
-          style={{
-            backgroundColor: '#FFFFFF',
-            border: '1px solid #E5E7EB',
-            borderRadius: '10px',
-            padding: '1.5rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-          }}
-        >
-          <div style={{ fontSize: '1rem', fontWeight: 600, color: '#1E293B', marginBottom: '1rem' }}>
-            Detection Source Breakdown
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B' }}>Rules Only</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#2563EB', marginTop: '0.25rem' }}>
-                {summary.rules_detected}
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B' }}>ML Only</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#7C3AED', marginTop: '0.25rem' }}>
-                {summary.ml_detected}
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B' }}>Combined</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#059669', marginTop: '0.25rem' }}>
-                {summary.combined_detected}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1E293B', marginBottom: '0.5rem' }}>
-            Category Classification
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem' }}>
-            <div style={{ flex: 1, backgroundColor: '#EFF6FF', padding: '0.75rem', borderRadius: '6px' }}>
-              <div style={{ fontWeight: 600, color: '#1E40AF' }}>Data Integrity Anomalies</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1D4ED8', marginTop: '0.25rem' }}>
-                {summary.data_integrity_count}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#3B82F6' }}>Duplicate, conflict, invalid record</div>
-            </div>
-            <div style={{ flex: 1, backgroundColor: '#F5F3FF', padding: '0.75rem', borderRadius: '6px' }}>
-              <div style={{ fontWeight: 600, color: '#5B21B6' }}>Behavioral Anomalies</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#6D28D9', marginTop: '0.25rem' }}>
-                {summary.behavioral_count}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#8B5CF6' }}>Spikes, streaks, deviations</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent High-Priority Review Signals Table */}
-      <div
-        style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E5E7EB',
-          borderRadius: '10px',
-          padding: '1.5rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      {/* Priority Anomaly Queue Preview */}
+      <div className="table-panel">
+        <div className="table-panel-header">
           <div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1E293B', margin: 0 }}>
-              Recent Actionable Review Signals
-            </h3>
-            <p style={{ fontSize: '0.75rem', color: '#64748B', margin: '0.2rem 0 0 0' }}>
-              Showing top unreviewed critical and high risk signals requiring attention.
-            </p>
+            <h2 className="table-panel-title">Priority Anomalies</h2>
+            <p className="table-panel-meta">Unreviewed records awaiting decision</p>
           </div>
           <button
-            onClick={() => onNavigateToQueue({ status: 'UNREVIEWED' })}
-            style={{
-              padding: '0.4rem 0.85rem',
-              backgroundColor: '#EFF6FF',
-              color: '#2563EB',
-              border: '1px solid #BFDBFE',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => onNavigateToQueue({})}
           >
-            View All in Queue &rarr;
+            View All &rarr;
           </button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+        <div className="table-scroll">
+          <table className="data-table">
             <thead>
-              <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E5E7EB' }}>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Anomaly ID</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Student Name</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Class</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Date</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Category</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Risk Tier</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600 }}>Source</th>
-                <th style={{ padding: '0.75rem', color: '#475569', fontWeight: 600, textAlign: 'right' }}>Action</th>
+              <tr>
+                <th>Student</th>
+                <th>Category</th>
+                <th>Severity</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th style={{ textAlign: 'right' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {recentAnomalies.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>
-                    No pending high priority signals.
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
+                    No unreviewed records in the priority queue.
                   </td>
                 </tr>
               ) : (
-                recentAnomalies.slice(0, 5).map((a) => (
-                  <tr key={a.anomaly_id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '0.75rem', fontWeight: 600, color: '#1E293B', fontFamily: 'monospace' }}>
-                      {a.anomaly_id}
+                recentAnomalies.slice(0, 6).map((a) => (
+                  <tr
+                    key={a.anomaly_id}
+                    className="clickable"
+                    onClick={() => onSelectAnomaly(a.anomaly_id)}
+                  >
+                    <td>
+                      <div className="cell-primary">{a.student_name}</div>
+                      <div className="cell-sub mono">
+                        {a.student_id} &middot; {a.class_id}
+                      </div>
                     </td>
-                    <td style={{ padding: '0.75rem', fontWeight: 600, color: '#1E293B' }}>{a.student_name}</td>
-                    <td style={{ padding: '0.75rem', color: '#64748B' }}>{a.class_id}</td>
-                    <td style={{ padding: '0.75rem', color: '#475569' }}>{a.date}</td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <span
-                        style={{
-                          backgroundColor: '#F1F5F9',
-                          color: '#334155',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 500
-                        }}
-                      >
-                        {a.anomaly_category}
+                    <td>
+                      <span className="tag-muted">{formatEnumLabel(a.anomaly_category)}</span>
+                    </td>
+                    <td>
+                      <span className={getRiskBadgeClass(a.risk_tier)}>{a.risk_tier}</span>
+                    </td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{a.detection_source}</td>
+                    <td>
+                      <span className={getStatusBadgeClass(a.review_status)}>
+                        {formatEnumLabel(a.review_status)}
                       </span>
                     </td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <span
-                        style={{
-                          backgroundColor:
-                            a.risk_tier === 'CRITICAL'
-                              ? '#FFE1E1'
-                              : a.risk_tier === 'HIGH'
-                              ? '#FFF1CC'
-                              : a.risk_tier === 'MEDIUM'
-                              ? '#DCEBFF'
-                              : '#F1F5F9',
-                          color:
-                            a.risk_tier === 'CRITICAL'
-                              ? '#991B1B'
-                              : a.risk_tier === 'HIGH'
-                              ? '#9A3412'
-                              : a.risk_tier === 'MEDIUM'
-                              ? '#1E40AF'
-                              : '#475569',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600
-                        }}
-                      >
-                        {a.risk_tier}
-                      </span>
+                    <td className="mono" style={{ color: 'var(--text-secondary)' }}>
+                      {a.date}
                     </td>
-                    <td style={{ padding: '0.75rem', color: '#64748B' }}>{a.detection_source}</td>
-                    <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                    <td style={{ textAlign: 'right' }}>
                       <button
-                        onClick={() => onSelectAnomaly(a.anomaly_id)}
-                        style={{
-                          padding: '0.35rem 0.75rem',
-                          backgroundColor: '#2563EB',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '5px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          cursor: 'pointer'
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectAnomaly(a.anomaly_id);
                         }}
                       >
-                        Review Signal
+                        Review
                       </button>
                     </td>
                   </tr>
