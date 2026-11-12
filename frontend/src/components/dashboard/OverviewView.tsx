@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+import { ArrowRight } from 'lucide-react';
 import type { DashboardSummary, Anomaly } from '../../types/dashboard';
 import { OverviewSkeleton } from '../common/Skeleton';
 import { formatEnumLabel, getRiskBadgeClass, getStatusBadgeClass } from '../../utils/formatters';
@@ -27,9 +29,7 @@ export const OverviewView: React.FC<OverviewProps> = ({
   const [showSlowNotice, setShowSlowNotice] = useState(false);
 
   useEffect(() => {
-    if (!loading) {
-      return;
-    }
+    if (!loading) return;
     const timer = setTimeout(() => setShowSlowNotice(true), SLOW_NOTICE_DELAY);
     return () => {
       clearTimeout(timer);
@@ -76,79 +76,80 @@ export const OverviewView: React.FC<OverviewProps> = ({
     );
   }
 
+  const metrics = [
+    {
+      label: 'Total Signals',
+      value: summary.total_anomalies,
+      tone: '',
+      filter: {}
+    },
+    {
+      label: 'Critical',
+      value: summary.critical_risk_count,
+      tone: 'critical',
+      filter: { risk: 'CRITICAL' }
+    },
+    {
+      label: 'High Risk',
+      value: summary.high_risk_count,
+      tone: 'high',
+      filter: { risk: 'HIGH' }
+    },
+    {
+      label: 'Medium Risk',
+      value: summary.medium_risk_count,
+      tone: 'medium',
+      filter: { risk: 'MEDIUM' }
+    }
+  ];
+
   return (
-    <div className="section-stack">
-      {/* Header */}
+    <motion.div
+      className="section-stack"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="page-header">
         <div>
           <h1 className="page-title">Overview</h1>
           <p className="page-subtitle">Monitor attendance integrity and review flagged records.</p>
         </div>
-        <button
-          type="button"
-          className="btn btn-cyan btn-sm"
-          onClick={() => onNavigateToQueue({ status: 'UNREVIEWED' })}
-        >
-          Open Anomaly Queue
-        </button>
       </div>
 
       {/* Four Compact Metric Cards */}
       <div className="metrics-grid">
-        <button
-          type="button"
-          className="metric-card"
-          onClick={() => onNavigateToQueue({})}
-        >
-          <span className="metric-label">Total Signals</span>
-          <span className="metric-value">{summary.total_anomalies}</span>
-          <span className="metric-foot">{summary.unreviewed_count} unreviewed</span>
-        </button>
-
-        <button
-          type="button"
-          className="metric-card"
-          onClick={() => onNavigateToQueue({ risk: 'CRITICAL' })}
-        >
-          <span className="metric-label">Critical</span>
-          <span className="metric-value critical">{summary.critical_risk_count}</span>
-          <span className="metric-foot">Immediate review</span>
-        </button>
-
-        <button
-          type="button"
-          className="metric-card"
-          onClick={() => onNavigateToQueue({ risk: 'HIGH' })}
-        >
-          <span className="metric-label">High Risk</span>
-          <span className="metric-value high">{summary.high_risk_count}</span>
-          <span className="metric-foot">Priority queue</span>
-        </button>
-
-        <button
-          type="button"
-          className="metric-card"
-          onClick={() => onNavigateToQueue({ risk: 'MEDIUM' })}
-        >
-          <span className="metric-label">Medium Risk</span>
-          <span className="metric-value medium">{summary.medium_risk_count}</span>
-          <span className="metric-foot">{summary.low_risk_count} low risk</span>
-        </button>
+        {metrics.map((m, idx) => (
+          <motion.button
+            key={m.label}
+            type="button"
+            className="metric-card"
+            onClick={() => onNavigateToQueue(m.filter)}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ y: -1 }}
+          >
+            <span className="metric-label">{m.label}</span>
+            <span className={`metric-value ${m.tone}`}>{m.value}</span>
+          </motion.button>
+        ))}
       </div>
 
-      {/* Priority Anomaly Queue Preview */}
+      {/* Anomaly Queue Preview */}
       <div className="table-panel">
         <div className="table-panel-header">
           <div>
-            <h2 className="table-panel-title">Priority Anomalies</h2>
-            <p className="table-panel-meta">Unreviewed records awaiting decision</p>
+            <h2 className="table-panel-title">Anomaly Queue</h2>
+            <p className="table-panel-meta">Review flagged attendance records.</p>
           </div>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => onNavigateToQueue({})}
           >
-            View All &rarr;
+            <span>View All</span>
+            <ArrowRight size={14} />
           </button>
         </div>
 
@@ -157,7 +158,7 @@ export const OverviewView: React.FC<OverviewProps> = ({
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Category</th>
+                <th>Type</th>
                 <th>Severity</th>
                 <th>Source</th>
                 <th>Status</th>
@@ -169,7 +170,7 @@ export const OverviewView: React.FC<OverviewProps> = ({
               {recentAnomalies.length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
-                    No unreviewed records in the priority queue.
+                    No unreviewed records in the queue.
                   </td>
                 </tr>
               ) : (
@@ -219,6 +220,6 @@ export const OverviewView: React.FC<OverviewProps> = ({
           </table>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

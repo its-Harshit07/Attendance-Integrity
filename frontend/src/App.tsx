@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { MotionConfig } from 'motion/react';
 import { CinematicHero } from './components/hero/CinematicHero';
 import { Layout, type NavTab } from './components/layout/Layout';
 import { OverviewView } from './components/dashboard/OverviewView';
@@ -163,61 +164,39 @@ export const App: React.FC = () => {
     setActiveTab('anomalies');
   };
 
-  const scrollToWorkspace = () => {
-    const el = document.getElementById('dashboard-workspace');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const handleOpenDashboard = () => {
-    setActiveTab('overview');
-    scrollToWorkspace();
-  };
-
-  const handleViewAnomaliesFromHero = () => {
-    setActiveTab('anomalies');
-    scrollToWorkspace();
-  };
-
   return (
-    <>
-      <CinematicHero
-        onOpenDashboard={handleOpenDashboard}
-        onViewAnomalies={handleViewAnomaliesFromHero}
-      />
+    <MotionConfig reducedMotion="user">
+      <div className="aurora-shell">
+        <CinematicHero />
 
-      <Layout
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onBrandClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      >
-        {activeTab === 'overview' && (
-          <OverviewView
-            summary={summary}
-            recentAnomalies={recentAnomalies}
-            onSelectAnomaly={handleSelectAnomaly}
-            onNavigateToQueue={handleNavigateToQueue}
-            loading={loadingSummary}
-            error={summaryError}
-            onRetry={loadSummaryData}
-          />
-        )}
+        <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+          {activeTab === 'overview' && (
+            <OverviewView
+              summary={summary}
+              recentAnomalies={recentAnomalies}
+              onSelectAnomaly={handleSelectAnomaly}
+              onNavigateToQueue={handleNavigateToQueue}
+              loading={loadingSummary}
+              error={summaryError}
+              onRetry={loadSummaryData}
+            />
+          )}
 
-        {activeTab === 'anomalies' && (
-          <AnomalyQueueView
-            anomalies={anomalies}
-            totalCount={totalCount}
-            filterParams={filterParams}
-            onFilterChange={handleFilterChange}
-            onSelectAnomaly={handleSelectAnomaly}
-            loading={loadingQueue}
-            error={queueError}
-            onRetry={() => loadQueueData(filterParams)}
-          />
-        )}
+          {activeTab === 'anomalies' && (
+            <AnomalyQueueView
+              anomalies={anomalies}
+              totalCount={totalCount}
+              filterParams={filterParams}
+              onFilterChange={handleFilterChange}
+              onSelectAnomaly={handleSelectAnomaly}
+              loading={loadingQueue}
+              error={queueError}
+              onRetry={() => loadQueueData(filterParams)}
+            />
+          )}
 
-        {activeTab === 'audit' && <AuditLogView onSelectAnomaly={handleSelectAnomaly} />}
+          {activeTab === 'audit' && <AuditLogView onSelectAnomaly={handleSelectAnomaly} />}
+        </Layout>
 
         <AnomalyDetailDrawer
           anomaly={selectedAnomalyDetail}
@@ -226,8 +205,8 @@ export const App: React.FC = () => {
           onClose={handleCloseDrawer}
           onReviewSubmitted={handleReviewSubmitted}
         />
-      </Layout>
-    </>
+      </div>
+    </MotionConfig>
   );
 };
 

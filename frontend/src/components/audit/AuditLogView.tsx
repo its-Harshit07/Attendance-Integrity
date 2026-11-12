@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
+import { RotateCw, Search } from 'lucide-react';
 import type { AuditLogEntry } from '../../types/dashboard';
 import { fetchAuditLog } from '../../api/client';
 import { AuditLogTableSkeleton } from '../common/Skeleton';
@@ -53,26 +55,35 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
     : logs;
 
   return (
-    <div className="section-stack">
+    <motion.div
+      className="section-stack"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="page-header">
         <div>
           <h1 className="page-title">Audit Log</h1>
-          <p className="page-subtitle">Chronological record of review decisions and status changes.</p>
+          <p className="page-subtitle">Chronological record of review decisions and outcomes.</p>
         </div>
         <button type="button" className="btn btn-ghost btn-sm" onClick={handleRefresh}>
-          Refresh
+          <RotateCw size={13} />
+          <span>Refresh</span>
         </button>
       </div>
 
       <div className="toolbar-card">
-        <input
-          type="text"
-          className="input-dark input-search"
-          placeholder="Search by Anomaly ID, reviewer, outcome, or note…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          aria-label="Search audit log"
-        />
+        <div className="search-input-wrap" style={{ flex: '1 1 240px' }}>
+          <Search size={14} className="search-icon" />
+          <input
+            type="text"
+            className="input-dark input-with-icon"
+            placeholder="Search by Anomaly ID, reviewer, outcome, or note…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search audit log"
+          />
+        </div>
         <span className="table-panel-meta mono">{filteredLogs.length} entries</span>
       </div>
 
@@ -123,7 +134,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
                         {log.previous_status} &rarr; {log.new_status}
                       </div>
                     </td>
-                    <td className="mono" style={{ fontWeight: 600 }}>
+                    <td className="mono" style={{ fontWeight: 500 }}>
                       {log.anomaly_id}
                     </td>
                     <td>
@@ -131,12 +142,12 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
                         <span className={getStatusBadgeClass(log.new_status)}>
                           {formatEnumLabel(log.new_status)}
                         </span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                           by {log.reviewer}
                         </span>
                       </div>
                       {log.note && (
-                        <div className="cell-sub" style={{ color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                        <div className="cell-sub" style={{ color: 'var(--text-secondary)', marginTop: '0.22rem' }}>
                           {log.note}
                         </div>
                       )}
@@ -148,6 +159,6 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
           </table>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

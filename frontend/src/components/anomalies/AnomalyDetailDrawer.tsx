@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { X } from 'lucide-react';
 import type { AnomalyDetail, ReviewStatus } from '../../types/dashboard';
 import { updateReviewStatus } from '../../api/client';
 import { formatEnumLabel, getRiskBadgeClass, getStatusBadgeClass } from '../../utils/formatters';
@@ -41,16 +43,16 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
     setErrorMsg(null);
   }
 
+  const isOpen = Boolean(anomaly || loading || error);
+
   useEffect(() => {
-    if (!anomaly && !loading && !error) return;
+    if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [anomaly, loading, error, onClose]);
-
-  if (!anomaly && !loading && !error) return null;
+  }, [isOpen, onClose]);
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +65,12 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
     setSubmitting(true);
     setErrorMsg(null);
     try {
-      await updateReviewStatus(anomaly.anomaly_id, newStatus, note.trim(), reviewer.trim() || 'Administrator');
+      await updateReviewStatus(
+        anomaly.anomaly_id,
+        newStatus,
+        note.trim(),
+        reviewer.trim() || 'Administrator'
+      );
       setSubmitting(false);
       onReviewSubmitted();
     } catch (err: any) {
@@ -81,260 +88,275 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
     : '';
 
   return (
-    <div
-      className="drawer-backdrop"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Anomaly details"
-    >
-      <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
-        <div className="drawer-header">
-          <div>
-            <div className="detail-k">Anomaly Record</div>
-            <div className="mono" style={{ fontSize: '1.05rem', fontWeight: 600, marginTop: '0.15rem' }}>
-              {anomaly ? anomaly.anomaly_id : 'Loading…'}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="drawer-close"
-            onClick={onClose}
-            aria-label="Close detail panel"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="drawer-backdrop"
+          onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Anomaly details"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            className="drawer-panel"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ x: 40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 40, opacity: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           >
-            &times;
-          </button>
-        </div>
-
-        <div className="drawer-body">
-          {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <Skeleton width="60%" height="1.25rem" />
-              <div className="detail-grid">
-                <Skeleton height="3.8rem" />
-                <Skeleton height="3.8rem" />
-                <Skeleton height="3.8rem" />
-                <Skeleton height="3.8rem" />
+            <div className="drawer-header">
+              <div>
+                <div className="detail-k">Anomaly Record</div>
+                <div className="mono" style={{ fontSize: '0.98rem', fontWeight: 600, marginTop: '0.15rem' }}>
+                  {anomaly ? anomaly.anomaly_id : 'Loading…'}
+                </div>
               </div>
-              <Skeleton height="5rem" />
-              <Skeleton height="8rem" />
-            </div>
-          ) : error || !anomaly ? (
-            <div className="inline-error" role="alert">
-              <span>{error || 'Unable to load anomaly details.'}</span>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-                Close
+              <button
+                type="button"
+                className="drawer-close"
+                onClick={onClose}
+                aria-label="Close detail panel"
+              >
+                <X size={16} />
               </button>
             </div>
-          ) : (
-            <>
-              {/* Student & Status Header */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: '1rem',
-                  flexWrap: 'wrap'
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{anomaly.student_name}</div>
-                  <div className="cell-sub mono" style={{ marginTop: '0.2rem' }}>
-                    {anomaly.student_id} &middot; {anomaly.class_id}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center' }}>
-                  <span className={getRiskBadgeClass(anomaly.risk_tier)}>{anomaly.risk_tier}</span>
-                  <span className={getStatusBadgeClass(anomaly.review_status)}>
-                    {formatEnumLabel(anomaly.review_status)}
-                  </span>
-                </div>
-              </div>
 
-              {/* Key Attributes */}
-              <div className="detail-grid">
-                <div className="detail-kv">
-                  <div className="detail-k">Category</div>
-                  <div className="detail-v">{formatEnumLabel(anomaly.anomaly_category)}</div>
-                </div>
-                <div className="detail-kv">
-                  <div className="detail-k">Record Date</div>
-                  <div className="detail-v mono">
-                    {anomaly.date} ({anomaly.attendance_status})
+            <div className="drawer-body">
+              {loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <Skeleton width="60%" height="1.25rem" />
+                  <div className="detail-grid">
+                    <Skeleton height="3.6rem" />
+                    <Skeleton height="3.6rem" />
+                    <Skeleton height="3.6rem" />
+                    <Skeleton height="3.6rem" />
                   </div>
+                  <Skeleton height="4.5rem" />
+                  <Skeleton height="7.5rem" />
                 </div>
-                <div className="detail-kv">
-                  <div className="detail-k">Detection Source</div>
-                  <div className="detail-v">{anomaly.detection_source}</div>
+              ) : error || !anomaly ? (
+                <div className="inline-error" role="alert">
+                  <span>{error || 'Unable to load anomaly details.'}</span>
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+                    Close
+                  </button>
                 </div>
-                <div className="detail-kv">
-                  <div className="detail-k">Signal Score</div>
-                  <div className="detail-v mono" style={{ color: 'var(--accent-cyan)' }}>
-                    {anomaly.anomaly_score.toFixed(4)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Concise Explanation */}
-              <div>
-                <div className="detail-k" style={{ marginBottom: '0.45rem' }}>
-                  Summary
-                </div>
-                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                  {conciseExplanation}
-                </p>
-              </div>
-
-              {/* Supporting Evidence */}
-              <div>
-                <div className="detail-k" style={{ marginBottom: '0.55rem' }}>
-                  Supporting Evidence
-                </div>
-                {anomaly.evidence && anomaly.evidence.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                    {anomaly.evidence.map((ev) => (
-                      <div key={ev.evidence_id} className="evidence-item">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.84rem', fontWeight: 600 }}>
-                            {ev.rule_id} &middot; {ev.rule_name}
-                          </span>
-                          <span className={getRiskBadgeClass(ev.severity)}>{ev.severity}</span>
-                        </div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                          {ev.explanation}
-                        </div>
-                        <div className="evidence-meta mono">
-                          <span>Observed: {ev.observed_value}</span>
-                          <span>Expected: {ev.expected_value}</span>
-                        </div>
+              ) : (
+                <>
+                  {/* Student & Status Header */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '1rem',
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '1.15rem', fontWeight: 600 }}>{anomaly.student_name}</div>
+                      <div className="cell-sub mono" style={{ marginTop: '0.2rem' }}>
+                        {anomaly.student_id} &middot; {anomaly.class_id}
                       </div>
-                    ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center' }}>
+                      <span className={getRiskBadgeClass(anomaly.risk_tier)}>{anomaly.risk_tier}</span>
+                      <span className={getStatusBadgeClass(anomaly.review_status)}>
+                        {formatEnumLabel(anomaly.review_status)}
+                      </span>
+                    </div>
                   </div>
-                ) : (
-                  <div className="evidence-item" style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
-                    Statistical deviation detected ({anomaly.detection_source}, score{' '}
-                    <span className="mono">{anomaly.anomaly_score.toFixed(4)}</span>).
+
+                  {/* Key Attributes */}
+                  <div className="detail-grid">
+                    <div className="detail-kv">
+                      <div className="detail-k">Category</div>
+                      <div className="detail-v">{formatEnumLabel(anomaly.anomaly_category)}</div>
+                    </div>
+                    <div className="detail-kv">
+                      <div className="detail-k">Attendance Date</div>
+                      <div className="detail-v mono">
+                        {anomaly.date} ({anomaly.attendance_status})
+                      </div>
+                    </div>
+                    <div className="detail-kv">
+                      <div className="detail-k">Detection Source</div>
+                      <div className="detail-v">{anomaly.detection_source}</div>
+                    </div>
+                    <div className="detail-kv">
+                      <div className="detail-k">Signal Score</div>
+                      <div className="detail-v mono" style={{ color: 'var(--accent-cyan)' }}>
+                        {anomaly.anomaly_score.toFixed(4)}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
 
-              {/* Review Action Form */}
-              <div style={{ borderTop: '1px solid var(--border-faint)', paddingTop: '1.25rem' }}>
-                <div className="detail-k" style={{ marginBottom: '0.85rem' }}>
-                  Review Decision
-                </div>
-
-                {errorMsg && (
-                  <div className="inline-error" style={{ marginBottom: '0.9rem' }} role="alert">
-                    <span>{errorMsg}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmitReview} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {/* Short Explanation */}
                   <div>
-                    <label
-                      htmlFor="review-status-select"
-                      style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
-                    >
-                      Status
-                    </label>
-                    <select
-                      id="review-status-select"
-                      className="select-dark"
-                      style={{ width: '100%' }}
-                      value={newStatus}
-                      onChange={(e) => setNewStatus(e.target.value)}
-                    >
-                      {REVIEW_STATUS_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label} ({opt.value})
-                        </option>
-                      ))}
-                    </select>
+                    <div className="detail-k" style={{ marginBottom: '0.4rem' }}>
+                      Explanation
+                    </div>
+                    <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                      {conciseExplanation}
+                    </p>
                   </div>
 
+                  {/* Supporting Evidence */}
                   <div>
-                    <label
-                      htmlFor="review-reviewer-input"
-                      style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
-                    >
-                      Reviewer
-                    </label>
-                    <input
-                      id="review-reviewer-input"
-                      type="text"
-                      className="input-dark"
-                      style={{ width: '100%' }}
-                      value={reviewer}
-                      onChange={(e) => setReviewer(e.target.value)}
-                    />
+                    <div className="detail-k" style={{ marginBottom: '0.5rem' }}>
+                      Supporting Evidence
+                    </div>
+                    {anomaly.evidence && anomaly.evidence.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                        {anomaly.evidence.map((ev) => (
+                          <div key={ev.evidence_id} className="evidence-item">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
+                              <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
+                                {ev.rule_id} &middot; {ev.rule_name}
+                              </span>
+                              <span className={getRiskBadgeClass(ev.severity)}>{ev.severity}</span>
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                              {ev.explanation}
+                            </div>
+                            <div className="evidence-meta mono">
+                              <span>Observed: {ev.observed_value}</span>
+                              <span>Expected: {ev.expected_value}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="evidence-item" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                        Statistical deviation detected ({anomaly.detection_source}, score{' '}
+                        <span className="mono">{anomaly.anomaly_score.toFixed(4)}</span>).
+                      </div>
+                    )}
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="review-note-input"
-                      style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
-                    >
-                      Review Note
-                    </label>
-                    <textarea
-                      id="review-note-input"
-                      rows={3}
-                      className="textarea-dark"
-                      style={{ width: '100%', resize: 'vertical' }}
-                      placeholder="Record verification findings or decision rationale…"
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                    />
-                  </div>
+                  {/* Review Action Form */}
+                  <div style={{ borderTop: '1px solid var(--border-faint)', paddingTop: '1.15rem' }}>
+                    <div className="detail-k" style={{ marginBottom: '0.8rem' }}>
+                      Review Action
+                    </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginTop: '0.25rem' }}>
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
-                      {submitting ? 'Saving…' : 'Submit Decision'}
-                    </button>
-                  </div>
-                </form>
-              </div>
+                    {errorMsg && (
+                      <div className="inline-error" style={{ marginBottom: '0.85rem' }} role="alert">
+                        <span>{errorMsg}</span>
+                      </div>
+                    )}
 
-              {/* Review History */}
-              {anomaly.review_history && anomaly.review_history.length > 0 && (
-                <div style={{ borderTop: '1px solid var(--border-faint)', paddingTop: '1.25rem' }}>
-                  <div className="detail-k" style={{ marginBottom: '0.65rem' }}>
-                    Review History
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-                    {anomaly.review_history.map((rh) => (
-                      <div key={rh.review_id} className="history-item">
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '0.5rem',
-                            color: 'var(--text-secondary)',
-                            fontSize: '0.76rem',
-                            marginBottom: '0.25rem'
-                          }}
+                    <form onSubmit={handleSubmitReview} style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                      <div>
+                        <label
+                          htmlFor="review-status-select"
+                          style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
                         >
-                          <span>
-                            <strong style={{ color: 'var(--text-primary)' }}>{rh.reviewer}</strong> &rarr;{' '}
-                            {formatEnumLabel(rh.new_status)}
-                          </span>
-                          <span className="mono">{rh.timestamp}</span>
-                        </div>
-                        <div style={{ color: 'var(--text-primary)', fontSize: '0.82rem' }}>{rh.note}</div>
+                          Status
+                        </label>
+                        <select
+                          id="review-status-select"
+                          className="select-dark"
+                          style={{ width: '100%' }}
+                          value={newStatus}
+                          onChange={(e) => setNewStatus(e.target.value)}
+                        >
+                          {REVIEW_STATUS_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label} ({opt.value})
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    ))}
+
+                      <div>
+                        <label
+                          htmlFor="review-reviewer-input"
+                          style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
+                        >
+                          Reviewer
+                        </label>
+                        <input
+                          id="review-reviewer-input"
+                          type="text"
+                          className="input-dark"
+                          style={{ width: '100%' }}
+                          value={reviewer}
+                          onChange={(e) => setReviewer(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="review-note-input"
+                          style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
+                        >
+                          Review Note
+                        </label>
+                        <textarea
+                          id="review-note-input"
+                          rows={3}
+                          className="textarea-dark"
+                          style={{ width: '100%', resize: 'vertical' }}
+                          placeholder="Record verification findings or decision rationale…"
+                          value={note}
+                          onChange={(e) => setNote(e.target.value)}
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.55rem', marginTop: '0.2rem' }}>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+                          Cancel
+                        </button>
+                        <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+                          {submitting ? 'Saving…' : 'Submit Decision'}
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                </div>
+
+                  {/* Review History */}
+                  {anomaly.review_history && anomaly.review_history.length > 0 && (
+                    <div style={{ borderTop: '1px solid var(--border-faint)', paddingTop: '1.15rem' }}>
+                      <div className="detail-k" style={{ marginBottom: '0.6rem' }}>
+                        Review History
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {anomaly.review_history.map((rh) => (
+                          <div key={rh.review_id} className="history-item">
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                gap: '0.5rem',
+                                color: 'var(--text-secondary)',
+                                fontSize: '0.74rem',
+                                marginBottom: '0.2rem'
+                              }}
+                            >
+                              <span>
+                                <strong style={{ color: 'var(--text-primary)' }}>{rh.reviewer}</strong> &rarr;{' '}
+                                {formatEnumLabel(rh.new_status)}
+                              </span>
+                              <span className="mono">{rh.timestamp}</span>
+                            </div>
+                            <div style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>{rh.note}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

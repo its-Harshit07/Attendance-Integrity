@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { fetchHealth } from '../../api/client';
 
 export type NavTab = 'overview' | 'anomalies' | 'audit';
@@ -6,16 +7,10 @@ export type NavTab = 'overview' | 'anomalies' | 'audit';
 interface LayoutProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
-  onBrandClick?: () => void;
   children: React.ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({
-  activeTab,
-  setActiveTab,
-  onBrandClick,
-  children
-}) => {
+export const Layout: React.FC<LayoutProps> = ({ activeTab, setActiveTab, children }) => {
   const [healthState, setHealthState] = useState<'checking' | 'operational' | 'degraded'>('checking');
 
   useEffect(() => {
@@ -36,7 +31,7 @@ export const Layout: React.FC<LayoutProps> = ({
 
   const navItems: { id: NavTab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'anomalies', label: 'Anomalies' },
+    { id: 'anomalies', label: 'Anomaly Queue' },
     { id: 'audit', label: 'Audit Log' }
   ];
 
@@ -44,24 +39,39 @@ export const Layout: React.FC<LayoutProps> = ({
     healthState === 'operational'
       ? 'System Operational'
       : healthState === 'checking'
-      ? 'Checking Status'
-      : 'Service Degraded';
+      ? 'Checking'
+      : 'Degraded';
 
   return (
-    <div id="dashboard-workspace" className="dashboard-shell">
-      <header className="app-header">
-        <div className="app-header-inner">
-          <button
-            type="button"
-            className="brand-wordmark"
-            onClick={onBrandClick}
-            aria-label="Attendance Integrity"
-          >
-            <span className="brand-mark" />
-            <span>Attendance Integrity</span>
-          </button>
+    <motion.div
+      className="aurora-right"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <header className="dash-header">
+        <div className="dash-header-top">
+          <div className="dash-brand-label">
+            <span className="aurora-brand-dot" />
+            <span>ATTENDANCE INTEGRITY</span>
+          </div>
 
-          <nav className="nav-links" aria-label="Primary navigation">
+          <div className="status-pill" aria-live="polite">
+            <span
+              className={`status-dot ${
+                healthState === 'degraded'
+                  ? 'degraded'
+                  : healthState === 'checking'
+                  ? 'checking'
+                  : ''
+              }`}
+            />
+            <span>{statusLabel}</span>
+          </div>
+        </div>
+
+        <div className="dash-nav-row">
+          <nav className="nav-tabs" aria-label="Dashboard navigation">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
@@ -77,28 +87,10 @@ export const Layout: React.FC<LayoutProps> = ({
               );
             })}
           </nav>
-
-          <div className="status-pill" aria-live="polite">
-            <span
-              className={`status-dot ${
-                healthState === 'degraded'
-                  ? 'degraded'
-                  : healthState === 'checking'
-                  ? 'checking'
-                  : ''
-              }`}
-            />
-            <span>{statusLabel}</span>
-          </div>
         </div>
       </header>
 
-      <main className="app-main">{children}</main>
-
-      <footer className="app-footer">
-        <span>Attendance Integrity</span>
-        <span>AI-Assisted Attendance Monitoring</span>
-      </footer>
-    </div>
+      <main className="dash-main">{children}</main>
+    </motion.div>
   );
 };

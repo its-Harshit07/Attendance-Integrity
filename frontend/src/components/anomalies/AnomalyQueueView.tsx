@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import type { Anomaly } from '../../types/dashboard';
 import type { AnomalyFilterParams } from '../../api/client';
 import { AnomalyQueueTableSkeleton } from '../common/Skeleton';
@@ -52,12 +54,16 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
   const hasActiveFilters = Boolean(filterParams.search || filterParams.status || filterParams.risk);
 
   return (
-    <div className="section-stack">
-      {/* Header */}
+    <motion.div
+      className="section-stack"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="page-header">
         <div>
-          <h1 className="page-title">Anomalies</h1>
-          <p className="page-subtitle">Search, filter, and review flagged attendance records.</p>
+          <h1 className="page-title">Anomaly Queue</h1>
+          <p className="page-subtitle">Review flagged attendance records.</p>
         </div>
         <span className="table-panel-meta mono">
           {totalCount} {totalCount === 1 ? 'record' : 'records'}
@@ -67,15 +73,18 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
       {/* Search & Filters */}
       <div className="toolbar-card">
         <form onSubmit={handleSearchSubmit} className="search-form">
-          <input
-            type="text"
-            className="input-dark input-search"
-            placeholder="Search student, ID, or class…"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Search anomalies"
-          />
-          <button type="submit" className="btn btn-cyan btn-sm">
+          <div className="search-input-wrap">
+            <Search size={14} className="search-icon" />
+            <input
+              type="text"
+              className="input-dark input-with-icon"
+              placeholder="Search student, ID, or class…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              aria-label="Search anomalies"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary btn-sm">
             Search
           </button>
           {hasActiveFilters && (
@@ -129,16 +138,18 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
             Showing {anomalies.length} of {totalCount}
           </span>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <button
               type="button"
               className="btn btn-ghost btn-sm"
               disabled={currentPage <= 1 || loading}
               onClick={() => handlePageChange(currentPage - 1)}
+              aria-label="Previous page"
             >
-              Previous
+              <ChevronLeft size={14} />
+              <span>Prev</span>
             </button>
-            <span className="table-panel-meta mono">
+            <span className="table-panel-meta mono" style={{ padding: '0 0.35rem' }}>
               {currentPage} / {totalPages}
             </span>
             <button
@@ -146,8 +157,10 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
               className="btn btn-ghost btn-sm"
               disabled={currentPage >= totalPages || loading}
               onClick={() => handlePageChange(currentPage + 1)}
+              aria-label="Next page"
             >
-              Next
+              <span>Next</span>
+              <ChevronRight size={14} />
             </button>
           </div>
         </div>
@@ -157,7 +170,7 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Category</th>
+                <th>Type</th>
                 <th>Severity</th>
                 <th>Source</th>
                 <th>Status</th>
@@ -236,6 +249,6 @@ export const AnomalyQueueView: React.FC<AnomalyQueueProps> = ({
           </table>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
