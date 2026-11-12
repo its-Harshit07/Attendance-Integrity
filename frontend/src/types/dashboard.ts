@@ -134,3 +134,10 @@ export interface StudentContext {
   anomalies: Anomaly[];
   observation_timeline: ObservationTimelineItem[];
 }
+
+export interface CompliancePreview {
+  status: string;
+  report_title: string;
+  notice: string;
+  summary: DashboardSummary;
+}

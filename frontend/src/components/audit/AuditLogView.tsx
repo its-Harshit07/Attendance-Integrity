@@ -56,15 +56,15 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
 
   return (
     <motion.div
-      className="section-stack"
+      className="gw-view"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="page-header">
+      <div className="gw-view-header">
         <div>
-          <h1 className="page-title">Audit Log</h1>
-          <p className="page-subtitle">Chronological record of review decisions and outcomes.</p>
+          <h1 className="gw-title">Audit Log</h1>
+          <p className="gw-subtitle">Chronological record of review decisions and outcomes.</p>
         </div>
         <button type="button" className="btn btn-ghost btn-sm" onClick={handleRefresh}>
           <RotateCw size={13} />
@@ -72,19 +72,21 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
         </button>
       </div>
 
-      <div className="toolbar-card">
-        <div className="search-input-wrap" style={{ flex: '1 1 240px' }}>
-          <Search size={14} className="search-icon" />
-          <input
-            type="text"
-            className="input-dark input-with-icon"
-            placeholder="Search by Anomaly ID, reviewer, outcome, or note…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search audit log"
-          />
+      <div className="gw-panel" style={{ padding: '0.85rem 1.1rem' }}>
+        <div className="gw-toolbar">
+          <div className="gw-search-wrap" style={{ flex: '1 1 240px' }}>
+            <Search size={14} className="gw-search-icon" />
+            <input
+              type="text"
+              className="gw-input gw-input-icon"
+              placeholder="Search by Anomaly ID, reviewer, outcome, or note…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search audit log"
+            />
+          </div>
+          <span className="gw-panel-meta mono">{filteredLogs.length} entries</span>
         </div>
-        <span className="table-panel-meta mono">{filteredLogs.length} entries</span>
       </div>
 
       {errorMsg && (
@@ -92,15 +94,15 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
           <span>
             <strong>Failed to load audit log.</strong> {errorMsg}
           </span>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={handleRefresh}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={handleRefresh}>
             Retry
           </button>
         </div>
       )}
 
-      <div className="table-panel">
-        <div className="table-scroll">
-          <table className="data-table">
+      <div className="gw-panel" style={{ padding: '0.75rem 1.25rem' }}>
+        <div className="gw-table-scroll">
+          <table className="gw-table">
             <thead>
               <tr>
                 <th>Timestamp</th>
@@ -114,7 +116,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
                 <AuditLogTableSkeleton />
               ) : filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gw-muted)' }}>
                     No audit log entries found.
                   </td>
                 </tr>
@@ -125,7 +127,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
                     className={onSelectAnomaly ? 'clickable' : undefined}
                     onClick={onSelectAnomaly ? () => onSelectAnomaly(log.anomaly_id) : undefined}
                   >
-                    <td className="mono" style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                    <td className="mono" style={{ color: 'var(--gw-muted)', whiteSpace: 'nowrap' }}>
                       {log.timestamp}
                     </td>
                     <td>
@@ -142,12 +144,12 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ onSelectAnomaly }) =
                         <span className={getStatusBadgeClass(log.new_status)}>
                           {formatEnumLabel(log.new_status)}
                         </span>
-                        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--gw-muted)' }}>
                           by {log.reviewer}
                         </span>
                       </div>
                       {log.note && (
-                        <div className="cell-sub" style={{ color: 'var(--text-secondary)', marginTop: '0.22rem' }}>
+                        <div className="cell-sub" style={{ marginTop: '0.22rem' }}>
                           {log.note}
                         </div>
                       )}

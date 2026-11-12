@@ -10,7 +10,7 @@ interface SkeletonProps {
 export const Skeleton: React.FC<SkeletonProps> = ({
   width = '100%',
   height = '1rem',
-  borderRadius = '6px',
+  borderRadius = '8px',
   style
 }) => (
   <div
@@ -47,34 +47,21 @@ export const SkeletonTableRows: React.FC<{ rows?: number; cols?: number }> = ({
 );
 
 export const OverviewSkeleton: React.FC = () => (
-  <div className="section-stack" aria-hidden="true">
+  <div className="gw-view" aria-hidden="true">
     <div>
-      <Skeleton width="160px" height="1.75rem" />
-      <Skeleton width="320px" height="0.9rem" style={{ marginTop: '0.5rem' }} />
+      <Skeleton width="100px" height="0.85rem" />
+      <Skeleton width="180px" height="2rem" style={{ marginTop: '0.45rem' }} />
+      <Skeleton width="300px" height="0.85rem" style={{ marginTop: '0.45rem' }} />
     </div>
 
-    <div className="metrics-grid">
+    <div className="gw-overview-grid">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="metric-card" style={{ cursor: 'default' }}>
-          <Skeleton width="50%" height="0.75rem" />
-          <Skeleton width="42%" height="2.2rem" />
-          <Skeleton width="65%" height="0.75rem" />
+        <div key={i} className="gw-panel">
+          <Skeleton width="45%" height="0.95rem" />
+          <Skeleton width="38%" height="2.4rem" />
+          <Skeleton width="100%" height="3.2rem" borderRadius="12px" />
         </div>
       ))}
-    </div>
-
-    <div className="table-panel">
-      <div className="table-panel-header">
-        <Skeleton width="180px" height="1rem" />
-        <Skeleton width="90px" height="1.8rem" />
-      </div>
-      <div className="table-scroll">
-        <table className="data-table">
-          <tbody>
-            <SkeletonTableRows rows={5} cols={7} />
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
 );

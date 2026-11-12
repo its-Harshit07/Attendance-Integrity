@@ -5,7 +5,8 @@ import type {
   AuditLogEntry,
   StudentContext,
   SystemInfo,
-  HealthStatus
+  HealthStatus,
+  CompliancePreview
 } from '../types/dashboard';
 
 function getApiBaseUrl(): string {
@@ -128,6 +129,13 @@ export async function fetchSystemInfo(): Promise<SystemInfo> {
 export async function fetchHealth(): Promise<HealthStatus> {
   const res = await fetch(`${API_BASE}/health`);
   return await parseJsonResponse(res, 'Failed to fetch system health');
+}
+
+export async function fetchCompliancePreview(): Promise<CompliancePreview> {
+  const res = await fetch(`${API_BASE}/reports/compliance-preview`);
+  const json = await parseJsonResponse(res, 'Failed to fetch compliance preview');
+  if (json.status !== 'success') throw new Error(json.detail || 'Failed to fetch compliance preview');
+  return json;
 }
 
 

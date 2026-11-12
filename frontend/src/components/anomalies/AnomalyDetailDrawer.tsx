@@ -112,7 +112,7 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
             <div className="drawer-header">
               <div>
                 <div className="detail-k">Anomaly Record</div>
-                <div className="mono" style={{ fontSize: '0.98rem', fontWeight: 600, marginTop: '0.15rem' }}>
+                <div className="mono" style={{ fontSize: '0.96rem', fontWeight: 600, marginTop: '0.15rem' }}>
                   {anomaly ? anomaly.anomaly_id : 'Loading…'}
                 </div>
               </div>
@@ -148,7 +148,6 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                 </div>
               ) : (
                 <>
-                  {/* Student & Status Header */}
                   <div
                     style={{
                       display: 'flex',
@@ -172,7 +171,6 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                     </div>
                   </div>
 
-                  {/* Key Attributes */}
                   <div className="detail-grid">
                     <div className="detail-kv">
                       <div className="detail-k">Category</div>
@@ -190,23 +188,19 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                     </div>
                     <div className="detail-kv">
                       <div className="detail-k">Signal Score</div>
-                      <div className="detail-v mono" style={{ color: 'var(--accent-cyan)' }}>
-                        {anomaly.anomaly_score.toFixed(4)}
-                      </div>
+                      <div className="detail-v mono">{anomaly.anomaly_score.toFixed(4)}</div>
                     </div>
                   </div>
 
-                  {/* Short Explanation */}
                   <div>
                     <div className="detail-k" style={{ marginBottom: '0.4rem' }}>
                       Explanation
                     </div>
-                    <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--gw-muted)', lineHeight: 1.55 }}>
                       {conciseExplanation}
                     </p>
                   </div>
 
-                  {/* Supporting Evidence */}
                   <div>
                     <div className="detail-k" style={{ marginBottom: '0.5rem' }}>
                       Supporting Evidence
@@ -221,7 +215,7 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                               </span>
                               <span className={getRiskBadgeClass(ev.severity)}>{ev.severity}</span>
                             </div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--gw-muted)' }}>
                               {ev.explanation}
                             </div>
                             <div className="evidence-meta mono">
@@ -232,16 +226,15 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                         ))}
                       </div>
                     ) : (
-                      <div className="evidence-item" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                      <div className="evidence-item" style={{ color: 'var(--gw-muted)', fontSize: '0.8rem' }}>
                         Statistical deviation detected ({anomaly.detection_source}, score{' '}
                         <span className="mono">{anomaly.anomaly_score.toFixed(4)}</span>).
                       </div>
                     )}
                   </div>
 
-                  {/* Review Action Form */}
-                  <div style={{ borderTop: '1px solid var(--border-faint)', paddingTop: '1.15rem' }}>
-                    <div className="detail-k" style={{ marginBottom: '0.8rem' }}>
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.1rem' }}>
+                    <div className="detail-k" style={{ marginBottom: '0.75rem' }}>
                       Review Action
                     </div>
 
@@ -255,13 +248,13 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                       <div>
                         <label
                           htmlFor="review-status-select"
-                          style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
+                          style={{ display: 'block', fontSize: '0.75rem', color: 'var(--gw-muted)', marginBottom: '0.35rem' }}
                         >
                           Status
                         </label>
                         <select
                           id="review-status-select"
-                          className="select-dark"
+                          className="gw-select"
                           style={{ width: '100%' }}
                           value={newStatus}
                           onChange={(e) => setNewStatus(e.target.value)}
@@ -277,14 +270,14 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                       <div>
                         <label
                           htmlFor="review-reviewer-input"
-                          style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
+                          style={{ display: 'block', fontSize: '0.75rem', color: 'var(--gw-muted)', marginBottom: '0.35rem' }}
                         >
                           Reviewer
                         </label>
                         <input
                           id="review-reviewer-input"
                           type="text"
-                          className="input-dark"
+                          className="gw-input"
                           style={{ width: '100%' }}
                           value={reviewer}
                           onChange={(e) => setReviewer(e.target.value)}
@@ -294,14 +287,14 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                       <div>
                         <label
                           htmlFor="review-note-input"
-                          style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}
+                          style={{ display: 'block', fontSize: '0.75rem', color: 'var(--gw-muted)', marginBottom: '0.35rem' }}
                         >
                           Review Note
                         </label>
                         <textarea
                           id="review-note-input"
                           rows={3}
-                          className="textarea-dark"
+                          className="gw-textarea"
                           style={{ width: '100%', resize: 'vertical' }}
                           placeholder="Record verification findings or decision rationale…"
                           value={note}
@@ -320,9 +313,8 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                     </form>
                   </div>
 
-                  {/* Review History */}
                   {anomaly.review_history && anomaly.review_history.length > 0 && (
-                    <div style={{ borderTop: '1px solid var(--border-faint)', paddingTop: '1.15rem' }}>
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.1rem' }}>
                       <div className="detail-k" style={{ marginBottom: '0.6rem' }}>
                         Review History
                       </div>
@@ -334,18 +326,18 @@ export const AnomalyDetailDrawer: React.FC<DetailDrawerProps> = ({
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 gap: '0.5rem',
-                                color: 'var(--text-secondary)',
+                                color: 'var(--gw-muted)',
                                 fontSize: '0.74rem',
                                 marginBottom: '0.2rem'
                               }}
                             >
                               <span>
-                                <strong style={{ color: 'var(--text-primary)' }}>{rh.reviewer}</strong> &rarr;{' '}
+                                <strong style={{ color: 'var(--gw-ink)' }}>{rh.reviewer}</strong> &rarr;{' '}
                                 {formatEnumLabel(rh.new_status)}
                               </span>
                               <span className="mono">{rh.timestamp}</span>
                             </div>
-                            <div style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>{rh.note}</div>
+                            <div style={{ color: 'var(--gw-ink)', fontSize: '0.8rem' }}>{rh.note}</div>
                           </div>
                         ))}
                       </div>
