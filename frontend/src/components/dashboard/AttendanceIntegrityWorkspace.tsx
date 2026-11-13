@@ -21,7 +21,15 @@ import {
 const ROOM_BACKGROUND_IMAGE =
   'https://cdn.21st.dev/assets/mirror/4a/4a0ed73b8ab76bd427aa70ab124329127f3df27cc7f31223a832ed7d28b3dda4.jpg';
 
-export const AttendanceIntegrityWorkspace: React.FC = () => {
+export interface AttendanceIntegrityWorkspaceProps {
+  adminEmail?: string | null;
+  onLogout?: () => void;
+}
+
+export const AttendanceIntegrityWorkspace: React.FC<AttendanceIntegrityWorkspaceProps> = ({
+  adminEmail,
+  onLogout
+}) => {
   const [activeNav, setActiveNav] = useState<GlassNavId>('overview');
   const [healthState, setHealthState] = useState<'checking' | 'operational' | 'degraded'>('checking');
 
@@ -190,6 +198,8 @@ export const AttendanceIntegrityWorkspace: React.FC = () => {
         activeNav={activeNav}
         onSelectNav={setActiveNav}
         healthState={healthState}
+        adminEmail={adminEmail}
+        onLogout={onLogout}
         style={warmPalette}
         footerNote="AI-assisted attendance monitoring · Records require human verification"
       >

@@ -17,6 +17,7 @@ sys.path.insert(0, BASE_DIR)
 
 # Force test database for phase 5c tests
 TEST_DB_PATH = os.path.join(BASE_DIR, "data", "test_phase5c_db.sqlite")
+os.environ["DATABASE_URL"] = ""
 os.environ["DATABASE_PATH"] = TEST_DB_PATH
 
 import src.dashboard.db as db_module
@@ -31,8 +32,21 @@ from src.dashboard.db import (
 )
 from fastapi.testclient import TestClient
 from src.dashboard.app import app
+from src.dashboard.auth import get_current_admin
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def override_admin_auth():
+    app.dependency_overrides[get_current_admin] = lambda: {
+        "email": "attendance@admin.edu",
+        "csrf_token": "test-csrf-token",
+        "token_hash": "test-hash",
+        "session_id": 1
+    }
+    yield
+    app.dependency_overrides.pop(get_current_admin, None)
 
 
 @pytest.fixture(scope="module", autouse=True)

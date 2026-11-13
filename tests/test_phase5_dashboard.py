@@ -40,8 +40,21 @@ db_module._engine = None
 db_module._SessionFactory = None
 
 from src.dashboard.db import init_db, get_db_connection, update_anomaly_review, get_dashboard_summary, inspect, get_engine
+from src.dashboard.auth import get_current_admin
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def override_admin_auth():
+    app.dependency_overrides[get_current_admin] = lambda: {
+        "email": "attendance@admin.edu",
+        "csrf_token": "test-csrf-token",
+        "token_hash": "test-hash",
+        "session_id": 1
+    }
+    yield
+    app.dependency_overrides.pop(get_current_admin, None)
 
 
 def test_1_database_initialization():
@@ -124,7 +137,8 @@ def test_5_review_state_transition_and_audit():
             "status": "VALIDATED",
             "note": "Unit test verified anomaly against register.",
             "reviewer": "Test Admin"
-        }
+        },
+        headers={"X-CSRF-Token": "test-csrf-token"}
     )
     assert res_patch.status_code == 200
     updated = res_patch.json()["data"]
@@ -145,7 +159,8 @@ def test_6_invalid_review_state_rejected():
 
     res_invalid = client.patch(
         f"/api/anomalies/{anom_id}/review",
-        json={"status": "INVALID_STATUS_NAME", "note": "bad test"}
+        json={"status": "INVALID_STATUS_NAME", "note": "bad test"},
+        headers={"X-CSRF-Token": "test-csrf-token"}
     )
     assert res_invalid.status_code == 400
 

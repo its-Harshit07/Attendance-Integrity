@@ -8,7 +8,7 @@ for PostgreSQL (production) and SQLite (local test / fallback environments).
 
 import os
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional, Tuple
 
 from dotenv import load_dotenv
@@ -98,6 +98,61 @@ class AuditLogModel(Base):
     timestamp = Column(String, nullable=False)
 
 
+# Phase 1: Security & Authentication Models
+class OtpChallengeModel(Base):
+    __tablename__ = "otp_challenges"
+
+    challenge_id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(255), nullable=False, index=True)
+    otp_hash = Column(String(128), nullable=False)
+    otp_encrypted = Column(Text, nullable=True)
+    attempts = Column(Integer, nullable=False, default=0)
+    max_attempts = Column(Integer, nullable=False, default=5)
+    created_at = Column(String, nullable=False, index=True)
+    expires_at = Column(String, nullable=False, index=True)
+    consumed_at = Column(String, nullable=True)
+    ip_address = Column(String(64), nullable=True)
+    user_agent = Column(String(255), nullable=True)
+
+
+class AdminSessionModel(Base):
+    __tablename__ = "admin_sessions"
+
+    session_id = Column(Integer, primary_key=True, autoincrement=True)
+    token_hash = Column(String(128), unique=True, nullable=False, index=True)
+    email = Column(String(255), nullable=False, index=True)
+    csrf_token = Column(String(128), nullable=False)
+    created_at = Column(String, nullable=False)
+    expires_at = Column(String, nullable=False, index=True)
+    last_activity_at = Column(String, nullable=False)
+    revoked_at = Column(String, nullable=True)
+    ip_address = Column(String(64), nullable=True)
+    user_agent = Column(String(255), nullable=True)
+
+
+class RateLimitRecordModel(Base):
+    __tablename__ = "rate_limits"
+
+    record_id = Column(Integer, primary_key=True, autoincrement=True)
+    key = Column(String(190), unique=True, nullable=False, index=True)
+    count = Column(Integer, nullable=False, default=1)
+    window_start = Column(String, nullable=False)
+    expires_at = Column(String, nullable=False, index=True)
+
+
+class SecurityAuditLogModel(Base):
+    __tablename__ = "security_audit_log"
+
+    event_id = Column(Integer, primary_key=True, autoincrement=True)
+    event_type = Column(String(64), nullable=False, index=True)
+    email = Column(String(255), nullable=True, index=True)
+    ip_address = Column(String(64), nullable=True)
+    user_agent = Column(String(255), nullable=True)
+    status = Column(String(32), nullable=False)
+    details = Column(Text, nullable=True)
+    timestamp = Column(String, nullable=False, index=True)
+
+
 def normalize_db_url(url: Optional[str]) -> str:
     """Normalize PostgreSQL connection string for SQLAlchemy 2.x + psycopg 3."""
     if not url:
@@ -128,6 +183,18 @@ def get_db_url() -> str:
 
 _engine = None
 _SessionFactory = None
+
+
+def reset_engine():
+    """Dispose active engine and reset global singleton references for test isolation."""
+    global _engine, _SessionFactory
+    if _engine:
+        try:
+            _engine.dispose()
+        except Exception:
+            pass
+    _engine = None
+    _SessionFactory = None
 
 
 def get_engine():
@@ -525,3 +592,362 @@ def get_audit_log_by_anomaly_id(anomaly_id: str) -> List[Dict[str, Any]]:
         } for a in audit_rows]
     finally:
         session.close()
+
+
+# Phase 1: Security & Authentication Helper Functions
+def _parse_iso(ts_str: str) -> datetime:
+    """Parse ISO 8601 string to timezone-aware UTC datetime."""
+    try:
+        clean = ts_str.strip()
+        if clean.endswith("Z"):
+            clean = clean[:-1] + "+00:00"
+        dt = datetime.fromisoformat(clean)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    except Exception:
+        return datetime.now(timezone.utc)
+
+
+def record_security_event(
+    event_type: str,
+    email: Optional[str] = None,
+    ip_address: Optional[str] = None,
+    user_agent: Optional[str] = None,
+    status: str = "SUCCESS",
+    details: Optional[str] = None
+) -> None:
+    """Record an audit trail event for security operations (never logs secrets/OTPs)."""
+    session = get_session()
+    try:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        evt = SecurityAuditLogModel(
+            event_type=event_type,
+            email=email.strip().lower() if email else None,
+            ip_address=ip_address[:64] if ip_address else None,
+            user_agent=user_agent[:255] if user_agent else None,
+            status=status[:32],
+            details=details,
+            timestamp=now_iso
+        )
+        session.add(evt)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Failed to record security event: {e}")
+    finally:
+        session.close()
+
+
+def save_otp_challenge(
+    email: str,
+    otp_hash: str,
+    otp_encrypted: Optional[str] = None,
+    ip_address: Optional[str] = None,
+    user_agent: Optional[str] = None,
+    expire_seconds: int = 300
+) -> Dict[str, Any]:
+    """Store a newly generated OTP challenge and invalidate any existing unconsumed challenges."""
+    session = get_session()
+    norm_email = email.strip().lower()
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    expires_iso = (now + timedelta(seconds=expire_seconds)).isoformat()
+    try:
+        # Invalidate active challenges for this email
+        active_challenges = session.query(OtpChallengeModel).filter(
+            OtpChallengeModel.email == norm_email,
+            OtpChallengeModel.consumed_at.is_(None)
+        ).all()
+        for ch in active_challenges:
+            ch.consumed_at = now_iso
+
+        new_challenge = OtpChallengeModel(
+            email=norm_email,
+            otp_hash=otp_hash,
+            otp_encrypted=otp_encrypted,
+            attempts=0,
+            max_attempts=5,
+            created_at=now_iso,
+            expires_at=expires_iso,
+            consumed_at=None,
+            ip_address=ip_address[:64] if ip_address else None,
+            user_agent=user_agent[:255] if user_agent else None
+        )
+        session.add(new_challenge)
+        session.commit()
+        return {
+            "challenge_id": new_challenge.challenge_id,
+            "email": new_challenge.email,
+            "created_at": new_challenge.created_at,
+            "expires_at": new_challenge.expires_at,
+            "max_attempts": new_challenge.max_attempts,
+            "otp_encrypted": new_challenge.otp_encrypted
+        }
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+def get_latest_otp_challenge(email: str) -> Optional[Dict[str, Any]]:
+    """Retrieve the latest OTP challenge for an email regardless of consumption (used for cooldown checks)."""
+    session = get_session()
+    norm_email = email.strip().lower()
+    try:
+        ch = session.query(OtpChallengeModel).filter(
+            OtpChallengeModel.email == norm_email
+        ).order_by(desc(OtpChallengeModel.created_at)).first()
+        if not ch:
+            return None
+        return {
+            "challenge_id": ch.challenge_id,
+            "email": ch.email,
+            "otp_hash": ch.otp_hash,
+            "otp_encrypted": ch.otp_encrypted,
+            "attempts": ch.attempts,
+            "max_attempts": ch.max_attempts,
+            "created_at": ch.created_at,
+            "expires_at": ch.expires_at,
+            "consumed_at": ch.consumed_at
+        }
+    finally:
+        session.close()
+
+
+def get_active_otp_challenge(email: str) -> Optional[Dict[str, Any]]:
+    """Retrieve the currently active (unconsumed, unexpired) OTP challenge for an email."""
+    session = get_session()
+    norm_email = email.strip().lower()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        ch = session.query(OtpChallengeModel).filter(
+            OtpChallengeModel.email == norm_email,
+            OtpChallengeModel.consumed_at.is_(None),
+            OtpChallengeModel.expires_at > now_iso
+        ).order_by(desc(OtpChallengeModel.created_at)).first()
+        if not ch:
+            return None
+        return {
+            "challenge_id": ch.challenge_id,
+            "email": ch.email,
+            "otp_hash": ch.otp_hash,
+            "otp_encrypted": ch.otp_encrypted,
+            "attempts": ch.attempts,
+            "max_attempts": ch.max_attempts,
+            "created_at": ch.created_at,
+            "expires_at": ch.expires_at,
+            "consumed_at": ch.consumed_at
+        }
+    finally:
+        session.close()
+
+
+def increment_otp_attempts(challenge_id: int) -> int:
+    """Increment the failed attempt counter for a challenge atomically and return the new attempt count."""
+    session = get_session()
+    try:
+        session.execute(
+            text("UPDATE otp_challenges SET attempts = attempts + 1 WHERE challenge_id = :id"),
+            {"id": challenge_id}
+        )
+        session.commit()
+        ch = session.query(OtpChallengeModel).filter(OtpChallengeModel.challenge_id == challenge_id).first()
+        return ch.attempts if ch else 0
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+def consume_otp_challenge(challenge_id: int) -> bool:
+    """
+    Atomically mark an OTP challenge as consumed.
+    Uses an atomic conditional UPDATE (WHERE challenge_id = :id AND consumed_at IS NULL).
+    Returns True if this exact invocation consumed the challenge.
+    Returns False if the challenge was already consumed, non-existent, or expired.
+    Prevents TOCTOU concurrency race conditions.
+    """
+    session = get_session()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        stmt = (
+            update(OtpChallengeModel)
+            .where(
+                OtpChallengeModel.challenge_id == challenge_id,
+                OtpChallengeModel.consumed_at.is_(None)
+            )
+            .values(consumed_at=now_iso)
+        )
+        res = session.execute(stmt)
+        session.commit()
+        return bool(res.rowcount and res.rowcount > 0)
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Failed to atomically consume challenge {challenge_id}: {e}")
+        return False
+    finally:
+        session.close()
+
+
+def create_admin_session(
+    email: str,
+    token_hash: str,
+    csrf_token: str,
+    ip_address: Optional[str] = None,
+    user_agent: Optional[str] = None,
+    expire_seconds: int = 86400
+) -> Dict[str, Any]:
+    """Create a persistent admin session record."""
+    session = get_session()
+    norm_email = email.strip().lower()
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    expires_iso = (now + timedelta(seconds=expire_seconds)).isoformat()
+    try:
+        sess = AdminSessionModel(
+            token_hash=token_hash,
+            email=norm_email,
+            csrf_token=csrf_token,
+            created_at=now_iso,
+            expires_at=expires_iso,
+            last_activity_at=now_iso,
+            revoked_at=None,
+            ip_address=ip_address[:64] if ip_address else None,
+            user_agent=user_agent[:255] if user_agent else None
+        )
+        session.add(sess)
+        session.commit()
+        return {
+            "session_id": sess.session_id,
+            "email": sess.email,
+            "csrf_token": sess.csrf_token,
+            "created_at": sess.created_at,
+            "expires_at": sess.expires_at,
+            "last_activity_at": sess.last_activity_at
+        }
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+def get_admin_session(token_hash: str) -> Optional[Dict[str, Any]]:
+    """Retrieve an active, non-revoked, non-expired admin session."""
+    session = get_session()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        sess = session.query(AdminSessionModel).filter(
+            AdminSessionModel.token_hash == token_hash,
+            AdminSessionModel.revoked_at.is_(None),
+            AdminSessionModel.expires_at > now_iso
+        ).first()
+        if not sess:
+            return None
+        return {
+            "session_id": sess.session_id,
+            "email": sess.email,
+            "csrf_token": sess.csrf_token,
+            "created_at": sess.created_at,
+            "expires_at": sess.expires_at,
+            "last_activity_at": sess.last_activity_at
+        }
+    finally:
+        session.close()
+
+
+def touch_admin_session(token_hash: str) -> None:
+    """Update last_activity_at timestamp for active session."""
+    session = get_session()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        sess = session.query(AdminSessionModel).filter(AdminSessionModel.token_hash == token_hash).first()
+        if sess and sess.revoked_at is None:
+            sess.last_activity_at = now_iso
+            session.commit()
+    except Exception as e:
+        session.rollback()
+        logger.warning(f"Failed to touch session: {e}")
+    finally:
+        session.close()
+
+
+def revoke_admin_session(token_hash: str) -> bool:
+    """Revoke an active admin session."""
+    session = get_session()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    try:
+        sess = session.query(AdminSessionModel).filter(
+            AdminSessionModel.token_hash == token_hash,
+            AdminSessionModel.revoked_at.is_(None)
+        ).first()
+        if sess:
+            sess.revoked_at = now_iso
+            session.commit()
+            return True
+        return False
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+def atomic_check_rate_limit(
+    key: str,
+    max_requests: int,
+    window_seconds: int
+) -> Tuple[bool, int]:
+    """
+    Check rate limit atomically using database persistence.
+    Returns (is_allowed, retry_after_seconds).
+    If allowed, (True, 0).
+    If exceeded, (False, retry_after_seconds).
+    """
+    session = get_session()
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+    try:
+        rec = session.query(RateLimitRecordModel).filter(RateLimitRecordModel.key == key).with_for_update().first() if session.bind.dialect.name != "sqlite" else session.query(RateLimitRecordModel).filter(RateLimitRecordModel.key == key).first()
+        
+        if rec is None:
+            expires_at = (now + timedelta(seconds=window_seconds)).isoformat()
+            new_rec = RateLimitRecordModel(
+                key=key,
+                count=1,
+                window_start=now_iso,
+                expires_at=expires_at
+            )
+            session.add(new_rec)
+            session.commit()
+            return (True, 0)
+
+        # Check if window expired
+        exp_dt = _parse_iso(rec.expires_at)
+        if now >= exp_dt:
+            # Reset window
+            rec.count = 1
+            rec.window_start = now_iso
+            rec.expires_at = (now + timedelta(seconds=window_seconds)).isoformat()
+            session.commit()
+            return (True, 0)
+
+        # Window still active
+        if rec.count < max_requests:
+            rec.count += 1
+            session.commit()
+            return (True, 0)
+        else:
+            retry_after = max(1, int((exp_dt - now).total_seconds()))
+            return (False, retry_after)
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error in rate limit check: {e}")
+        # Fail safe if DB transient error: allow with caution or re-raise
+        return (True, 0)
+    finally:
+        session.close()
+

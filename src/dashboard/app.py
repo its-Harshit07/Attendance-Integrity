@@ -38,8 +38,13 @@ STATIC_DIR = os.getenv("FRONTEND_DIST_DIR", FRONTEND_DIST if os.path.exists(FRON
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifecycle event: Initialize DB and verify operational state on startup."""
+    """Lifecycle event: Validate production config, initialize DB and verify operational state."""
     logger.info("Initializing Attendance Integrity Dashboard application...")
+    
+    # 1. Enforce strict production configuration validation
+    from src.dashboard.auth import validate_production_configuration
+    validate_production_configuration()
+
     init_db()
     
     # Check if DB is populated; if not, initialize from Phase 4 data
@@ -88,13 +93,51 @@ app.add_middleware(
 )
 
 
+# Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https: blob:; "
+        "connect-src 'self' https://attendance-integrity.vercel.app http://localhost:5173 http://localhost:3000 http://127.0.0.1:8000; "
+        "frame-ancestors 'none';"
+    )
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+    # Phase 1W: Explicit cache hardening for all API responses
+    # Applies to all /api/ endpoints (success, 401, 403, 404, 429, 500)
+    # Preserves stronger endpoint-specific cache directives (e.g. OTP retrieval headers)
+    if request.url.path.startswith("/api"):
+        if "cache-control" not in response.headers:
+            response.headers["Cache-Control"] = "no-store, private"
+
+    # Mandatory Session Hardening: Clear authentication cookies on 401 Unauthorized responses
+    if response.status_code == 401 and request.url.path.startswith("/api"):
+        response.delete_cookie("attendance_session", path="/")
+        response.delete_cookie("attendance_csrf", path="/")
+
+    return response
+
 
 # Global Exception Handler (Suppress Raw Tracebacks)
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled server error on {request.url.path}: {exc}", exc_info=True)
+    headers = {}
+    if request.url.path.startswith("/api"):
+        headers["Cache-Control"] = "no-store, private"
     return JSONResponse(
         status_code=500,
+        headers=headers,
         content={"error": "An internal server error occurred."}
     )
 

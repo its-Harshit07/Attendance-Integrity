@@ -4,7 +4,8 @@ import {
   BarChart3,
   History,
   Home,
-  Layers
+  Layers,
+  LogOut
 } from 'lucide-react';
 
 export type GlassNavId = 'overview' | 'anomalies' | 'audit' | 'reports';
@@ -65,6 +66,8 @@ export interface GlassWorkspaceProps {
   activeNav: GlassNavId;
   onSelectNav: (nav: GlassNavId) => void;
   healthState?: 'checking' | 'operational' | 'degraded';
+  adminEmail?: string | null;
+  onLogout?: () => void;
   glass?: Partial<GlassSettings>;
   style?: CSSProperties;
   footerNote?: string;
@@ -85,6 +88,8 @@ export const GlassWorkspace: React.FC<GlassWorkspaceProps> = ({
   activeNav,
   onSelectNav,
   healthState = 'checking',
+  adminEmail,
+  onLogout,
   glass,
   style,
   footerNote,
@@ -135,7 +140,7 @@ export const GlassWorkspace: React.FC<GlassWorkspaceProps> = ({
             <span className="gw-workspace-label">{workspaceLabel}</span>
           </div>
 
-          <div className="gw-topbar-right">
+          <div className="gw-topbar-right flex items-center gap-2">
             <div className="gw-status-pill" aria-live="polite">
               <span
                 className={`gw-status-dot ${
@@ -148,6 +153,19 @@ export const GlassWorkspace: React.FC<GlassWorkspaceProps> = ({
               />
               <span>{statusText}</span>
             </div>
+
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="gw-status-pill hover:bg-white/15 cursor-pointer transition-colors flex items-center gap-1.5"
+                title={adminEmail ? `Signed in as ${adminEmail} — Click to Sign Out` : 'Sign Out'}
+                aria-label="Sign Out"
+              >
+                <LogOut size={13} className="text-white/80" />
+                <span>Sign Out</span>
+              </button>
+            )}
           </div>
         </header>
 
