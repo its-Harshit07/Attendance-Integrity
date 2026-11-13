@@ -1158,3 +1158,119 @@ def test_37_fresh_launch_invalidation_and_no_auto_restore():
     assert ver_fresh.status_code == 200
     assert client.get("/api/dashboard/summary").status_code == 200
 
+
+def test_38_otp_logging_to_render_disabled_by_default(caplog):
+    """
+    Test 38: Verify OTP logging is disabled by default (OTP_LOG_TO_RENDER unset or false).
+    Logs must never contain the generated OTP value when disabled.
+    """
+    import os
+    reset_auth_state()
+
+    # Ensure OTP_LOG_TO_RENDER is unset
+    if "OTP_LOG_TO_RENDER" in os.environ:
+        del os.environ["OTP_LOG_TO_RENDER"]
+
+    import logging
+    with caplog.at_level(logging.INFO, logger="attendance_integrity.routes"):
+        r = client.post("/api/auth/otp/request", json={"email": "attendance@admin.edu"})
+        assert r.status_code == 200
+
+        # Retrieve the OTP to know what it is
+        ret = client.get("/api/auth/otp/retrieve", headers={"X-OTP-Retrieval-Secret": TEST_RETRIEVAL_SECRET})
+        assert ret.status_code == 200
+        otp = ret.json()["otp"]
+
+        # Assert OTP is NOT logged
+        assert "ADMIN OTP GENERATED" not in caplog.text
+        assert otp not in caplog.text
+
+
+def test_39_otp_logging_to_render_when_enabled(caplog):
+    """
+    Test 39: Verify that when OTP_LOG_TO_RENDER=true, successful OTP generation emits
+    the exact structured log format:
+    'ADMIN OTP GENERATED | OTP: <6-digit> | Expires in: 300 seconds'
+    """
+    import os
+    reset_auth_state()
+
+    os.environ["OTP_LOG_TO_RENDER"] = "true"
+    try:
+        import logging
+        with caplog.at_level(logging.INFO, logger="attendance_integrity.routes"):
+            r = client.post("/api/auth/otp/request", json={"email": "attendance@admin.edu"})
+            assert r.status_code == 200
+
+            # Retrieve OTP to match
+            ret = client.get("/api/auth/otp/retrieve", headers={"X-OTP-Retrieval-Secret": TEST_RETRIEVAL_SECRET})
+            assert ret.status_code == 200
+            otp = ret.json()["otp"]
+
+            expected_log = f"ADMIN OTP GENERATED | OTP: {otp} | Expires in: 300 seconds"
+            assert expected_log in caplog.text
+    finally:
+        os.environ.pop("OTP_LOG_TO_RENDER", None)
+
+
+def test_40_otp_logging_never_emits_secrets_or_invalid_otps(caplog):
+    """
+    Test 40: Verify that:
+    1. Failed / unauthorized / invalid requests do not emit OTP generation logs.
+    2. Unrelated secrets (retrieval secret, encryption key, session secret, cookies, CSRF)
+       are NEVER logged in service logs.
+    """
+    import os
+    reset_auth_state()
+
+    os.environ["OTP_LOG_TO_RENDER"] = "true"
+    try:
+        import logging
+        with caplog.at_level(logging.INFO):
+            # 1. Invalid email format
+            caplog.clear()
+            r_inv = client.post("/api/auth/otp/request", json={"email": "not-an-email"})
+            assert r_inv.status_code == 200
+            assert "ADMIN OTP GENERATED" not in caplog.text
+
+            # 2. Unauthorized email
+            caplog.clear()
+            r_unauth = client.post("/api/auth/otp/request", json={"email": "intruder@domain.com"})
+            assert r_unauth.status_code == 200
+            assert "ADMIN OTP GENERATED" not in caplog.text
+
+            # 3. Successful generation for valid admin
+            caplog.clear()
+            r_valid = client.post("/api/auth/otp/request", json={"email": "attendance@admin.edu"})
+            assert r_valid.status_code == 200
+            assert "ADMIN OTP GENERATED | OTP:" in caplog.text
+
+            # 4. Failed verification with wrong OTP does NOT generate or log new OTP
+            caplog.clear()
+            r_wrong = client.post("/api/auth/otp/verify", json={"email": "attendance@admin.edu", "otp": "000000"})
+            assert r_wrong.status_code == 400
+            assert "ADMIN OTP GENERATED" not in caplog.text
+
+            # 5. Retrieve OTP via secret header: verify secret is NOT logged
+            caplog.clear()
+            r_ret = client.get("/api/auth/otp/retrieve", headers={"X-OTP-Retrieval-Secret": TEST_RETRIEVAL_SECRET})
+            assert r_ret.status_code == 200
+            ret_otp = r_ret.json()["otp"]
+
+            # 6. Verify and establish session
+            r_ver = client.post("/api/auth/otp/verify", json={"email": "attendance@admin.edu", "otp": ret_otp})
+            assert r_ver.status_code == 200
+            csrf_token = r_ver.json()["csrf_token"]
+            session_cookie = r_ver.cookies.get("attendance_session")
+
+            all_log_text = caplog.text
+            # Strict secret leakage assertions:
+            assert TEST_RETRIEVAL_SECRET not in all_log_text
+            assert os.getenv("OTP_HMAC_SECRET", "attendance-integrity-otp-hmac-secret-dev-2026") not in all_log_text
+            assert os.getenv("OTP_RETRIEVAL_ENCRYPTION_KEY", "WDbIHuvetrXb9P4t6snziLZ2lsElZwBNAkxw1OqAneI=") not in all_log_text
+            assert session_cookie not in all_log_text
+            assert csrf_token not in all_log_text
+    finally:
+        os.environ.pop("OTP_LOG_TO_RENDER", None)
+
+

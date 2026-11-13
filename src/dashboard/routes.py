@@ -9,6 +9,7 @@ compliance reporting, and technical provenance.
 
 import os
 import json
+import logging
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Query, Path, Request, Response, Depends, status
@@ -40,6 +41,7 @@ from src.dashboard.auth import (
     normalize_email,
     is_valid_email_format,
     is_authorized_admin_email,
+    is_otp_log_to_render_enabled,
     get_allowed_admin_emails,
     generate_otp,
     hash_otp,
@@ -67,6 +69,7 @@ from src.dashboard.auth import (
 )
 
 router = APIRouter(prefix="/api")
+logger = logging.getLogger("attendance_integrity.routes")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MODEL_META_PATH = os.path.join(BASE_DIR, "models", "model_metadata.json")
@@ -218,6 +221,10 @@ def api_request_otp(payload: OtpRequestSchema, request: Request) -> Any:
         expire_seconds=OTP_EXPIRY_SECONDS
     )
     record_security_event("OTP_REQUEST", norm_email, ip, ua, "SUCCESS")
+
+    # If explicitly enabled, emit structured log for Render service logs
+    if is_otp_log_to_render_enabled():
+        logger.info(f"ADMIN OTP GENERATED | OTP: {otp} | Expires in: {OTP_EXPIRY_SECONDS} seconds")
 
     return {
         "status": "success",

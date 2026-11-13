@@ -47,6 +47,15 @@ DEV_DEFAULT_SESSION_SECRET = "attendance-integrity-default-session-secret-dev-20
 DEV_FALLBACK_ENCRYPTION_KEY = b"WDbIHuvetrXb9P4t6snziLZ2lsElZwBNAkxw1OqAneI="
 
 # Environment & Configuration Loaders
+def is_otp_log_to_render_enabled() -> bool:
+    """
+    Check if OTP logging to service output/Render logs is explicitly enabled.
+    Default must be False. Never auto-enabled based on environment detection.
+    """
+    val = os.getenv("OTP_LOG_TO_RENDER", "false").strip().lower()
+    return val in ("true", "1", "yes", "enabled")
+
+
 def get_otp_hmac_secret() -> str:
     sec = os.getenv("OTP_HMAC_SECRET")
     if sec and sec.strip():
